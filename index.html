@@ -3,68 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PersonaBudget - Premium Expense Tracker</title>
+    <title>Decision Lab - Demand-Supply CEO Simulator</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts for premium feel -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js for visualizations -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="glass-container">
-        <header>
-            <h1>PersonaBudget</h1>
-            <p class="subtitle">Track your life's unique buckets</p>
-        </header>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">📊</span>
+                <span class="logo-text">Decision Lab</span>
+            </div>
+            <nav>
+                <div class="nav-item active">Dashboard</div>
+                <div class="nav-item">Market Insights</div>
+                <div class="nav-item">Strategy Analysis</div>
+            </nav>
+            <div class="round-indicator">
+                <div class="label">Round</div>
+                <div id="current-round">1</div>
+            </div>
+        </aside>
 
-        <main class="dashboard">
-            <section class="input-section card">
-                <h2>Add Expense</h2>
-                <form id="expense-form">
-                    <div class="input-group">
-                        <label for="amount">Amount ($)</label>
-                        <input type="number" id="amount" placeholder="0.00" required step="0.01">
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="category">Category</label>
-                        <select id="category" required>
-                            <option value="" disabled selected>Select Bucket</option>
-                            <option value="Dog Toys">🐶 Dog Toys</option>
-                            <option value="Specialty Coffee">☕ Specialty Coffee</option>
-                            <option value="Concert Tickets">🎟️ Concert Tickets</option>
-                            <option value="Dining Out">🍽️ Dining Out</option>
-                            <option value="Travel">✈️ Travel</option>
-                            <option value="Hobbies">🎨 Hobbies</option>
-                            <option value="Subscriptions">📺 Subscriptions</option>
-                            <option value="Miscellaneous">✨ Miscellaneous</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="note">Note</label>
-                        <input type="text" id="note" placeholder="What was this for?">
-                    </div>
-
-                    <button type="submit" class="btn-primary">Add to Ledger</button>
-                </form>
-            </section>
-
-            <section class="visuals-section card">
-                <h2>Monthly Breakdown</h2>
-                <div class="chart-container">
-                    <canvas id="expenseChart"></canvas>
+        <!-- Main Dashboard Content -->
+        <main class="content">
+            <header class="top-bar">
+                <div class="welcome">
+                    <h1>Firm Performance Dashboard</h1>
+                    <p>Maximizing market value under dynamic conditions.</p>
                 </div>
-            </section>
+                <div class="stats-grid-top">
+                    <div class="quick-stat">
+                        <span class="label">Cash Flow</span>
+                        <span id="stat-cash">$1,000,000</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Market Share</span>
+                        <span id="stat-share">12.5%</span>
+                    </div>
+                </div>
+            </header>
 
-            <section class="ledger-section card">
-                <h2>Recent Activity</h2>
-                <ul id="expense-list" class="expense-list">
-                    <!-- Items injected via JS -->
-                </ul>
-            </section>
+            <div class="dashboard-grid">
+                <!-- Decision Controls -->
+                <section class="card control-card">
+                    <div class="card-header">
+                        <h2>CEO Decision Inputs</h2>
+                    </div>
+                    <form id="decision-form">
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="price">Price (P)</label>
+                                <span id="price-val" class="badge">$500</span>
+                            </div>
+                            <input type="range" id="price" min="100" max="2000" step="10" value="500">
+                        </div>
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="quantity">Target Quantity (Q)</label>
+                                <span id="quantity-val" class="badge">1,000 units</span>
+                            </div>
+                            <input type="range" id="quantity" min="100" max="5000" step="50" value="1000">
+                        </div>
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="ad-spend">Advertising (A)</label>
+                                <span id="ad-val" class="badge">$25,000</span>
+                            </div>
+                            <input type="range" id="ad-spend" min="0" max="100000" step="1000" value="25000">
+                        </div>
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="investment">Capacity Investment (I)</label>
+                                <span id="inv-val" class="badge">$50,000</span>
+                            </div>
+                            <input type="range" id="investment" min="0" max="250000" step="5000" value="50000">
+                        </div>
+                        <button type="submit" class="btn-execute">Execute Decision</button>
+                    </form>
+                </section>
+
+                <!-- Market State Visualization -->
+                <section class="card chart-card">
+                    <div class="card-header">
+                        <h2>Profit & Loss Trend</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Feedback and Status -->
+                <section class="card status-card">
+                    <div class="card-header">
+                        <h2>Market Feedback</h2>
+                    </div>
+                    <div id="feedback-log" class="feedback-log">
+                        <div class="log-entry info">Market initialized. Select inputs for Round 1.</div>
+                    </div>
+                </section>
+
+                <!-- Detailed Metrics -->
+                <section class="card metrics-card">
+                    <div class="card-header">
+                        <h2>Operating Metrics</h2>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="label">Revenue</div>
+                            <div id="res-revenue">$0</div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Net Profit</div>
+                            <div id="res-profit">$0</div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Inventory Health</div>
+                            <div class="progress-bar">
+                                <div id="inventory-bar" class="progress-fill" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Consumer Satisfaction</div>
+                            <div id="res-satisfaction">Excellent (95%)</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
-    <script src="app.js"></script>
+
+    <!-- Final Score Modal -->
+    <div id="score-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h1>Performance Analysis</h1>
+            <div class="score-grid">
+                <div class="score-box">
+                    <span class="label">Final Grade</span>
+                    <span id="final-grade" class="grade">A</span>
+                </div>
+                <div id="score-details" class="details"></div>
+            </div>
+            <button id="restart-btn" class="btn-primary">Restart Simulation</button>
+        </div>
+    </div>
+
+    <script src="engine.js"></script>
+    <script src="ui.js"></script>
 </body>
 </html>
