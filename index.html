@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersonaBudget - Premium Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>PersonaBudget</h1>
+            <p class="subtitle">Track your life's unique buckets</p>
+        </header>
+
+        <main class="dashboard">
+            <section class="input-section card">
+                <h2>Add Expense</h2>
+                <form id="expense-form">
+                    <div class="input-group">
+                        <label for="amount">Amount ($)</label>
+                        <input type="number" id="amount" placeholder="0.00" required step="0.01">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="" disabled selected>Select Bucket</option>
+                            <option value="Dog Toys">🐶 Dog Toys</option>
+                            <option value="Specialty Coffee">☕ Specialty Coffee</option>
+                            <option value="Concert Tickets">🎟️ Concert Tickets</option>
+                            <option value="Dining Out">🍽️ Dining Out</option>
+                            <option value="Travel">✈️ Travel</option>
+                            <option value="Hobbies">🎨 Hobbies</option>
+                            <option value="Subscriptions">📺 Subscriptions</option>
+                            <option value="Miscellaneous">✨ Miscellaneous</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="note">Note</label>
+                        <input type="text" id="note" placeholder="What was this for?">
+                    </div>
+
+                    <button type="submit" class="btn-primary">Add to Ledger</button>
+                </form>
+            </section>
+
+            <section class="visuals-section card">
+                <h2>Monthly Breakdown</h2>
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </section>
+
+            <section class="ledger-section card">
+                <h2>Recent Activity</h2>
+                <ul id="expense-list" class="expense-list">
+                    <!-- Items injected via JS -->
+                </ul>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
