@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const categoryColors = {
         'Dog Toys': '#fbbf24',
-        'Specialty Coffee': '#a855f7',
+        'Specialty Coffee': '#c084fc',
         'Concert Tickets': '#f43f5e',
         'Dining Out': '#10b981',
-        'Travel': '#3b82f6',
-        'Hobbies': '#ec4899',
-        'Subscriptions': '#8b5cf6',
-        'Miscellaneous': '#64748b'
+        'Travel': '#38bdf8',
+        'Hobbies': '#f472b6',
+        'Subscriptions': '#a78bfa',
+        'Miscellaneous': '#94a3b8'
     };
 
     // Initialize Chart
