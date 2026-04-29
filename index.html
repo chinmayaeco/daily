@@ -3,154 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decision Lab - Demand-Supply CEO Simulator</title>
+    <title>BDA Analytics | Student Performance Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="layout">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo">
-                <span class="logo-icon">📊</span>
-                <span class="logo-text">Decision Lab</span>
-            </div>
-            <nav>
-                <div class="nav-item active">Dashboard</div>
-                <div class="nav-item">Market Insights</div>
-                <div class="nav-item">Strategy Analysis</div>
-            </nav>
-            <div class="round-indicator">
-                <div class="label">Round</div>
-                <div id="current-round">1</div>
-            </div>
+    <div class="bg-gradient"></div>
+    
+    <div class="dashboard-container">
+        <aside>
+            <div class="logo">BDA Analytics</div>
+            <ul class="nav-links">
+                <li class="active">
+                    <span>🏠</span> Overview
+                </li>
+                <li>
+                    <span>👨‍🎓</span> Students
+                </li>
+                <li>
+                    <span>📈</span> Trends
+                </li>
+                <li>
+                    <span>⚙️</span> Settings
+                </li>
+            </ul>
         </aside>
 
-        <!-- Main Dashboard Content -->
-        <main class="content">
-            <header class="top-bar">
-                <div class="welcome">
-                    <h1>Firm Performance Dashboard</h1>
-                    <p>Maximizing market value under dynamic conditions.</p>
-                </div>
-                <div class="stats-grid-top">
-                    <div class="quick-stat">
-                        <span class="label">Cash Flow</span>
-                        <span id="stat-cash">$1,000,000</span>
-                    </div>
-                    <div class="quick-stat">
-                        <span class="label">Market Share</span>
-                        <span id="stat-share">12.5%</span>
-                    </div>
+        <main>
+            <header>
+                <h1>Performance Overview</h1>
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="studentSearch" placeholder="Search student name...">
                 </div>
             </header>
 
-            <div class="dashboard-grid">
-                <!-- Decision Controls -->
-                <section class="card control-card">
-                    <div class="card-header">
-                        <h2>CEO Decision Inputs</h2>
-                    </div>
-                    <form id="decision-form">
-                        <div class="input-group">
-                            <div class="label-row">
-                                <label for="price">Price (P)</label>
-                                <span id="price-val" class="badge">$500</span>
-                            </div>
-                            <input type="range" id="price" min="100" max="2000" step="10" value="500">
-                        </div>
-                        <div class="input-group">
-                            <div class="label-row">
-                                <label for="quantity">Target Quantity (Q)</label>
-                                <span id="quantity-val" class="badge">1,000 units</span>
-                            </div>
-                            <input type="range" id="quantity" min="100" max="5000" step="50" value="1000">
-                        </div>
-                        <div class="input-group">
-                            <div class="label-row">
-                                <label for="ad-spend">Advertising (A)</label>
-                                <span id="ad-val" class="badge">$25,000</span>
-                            </div>
-                            <input type="range" id="ad-spend" min="0" max="100000" step="1000" value="25000">
-                        </div>
-                        <div class="input-group">
-                            <div class="label-row">
-                                <label for="investment">Capacity Investment (I)</label>
-                                <span id="inv-val" class="badge">$50,000</span>
-                            </div>
-                            <input type="range" id="investment" min="0" max="250000" step="5000" value="50000">
-                        </div>
-                        <button type="submit" class="btn-execute">Execute Decision</button>
-                    </form>
-                </section>
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Students</div>
+                    <div class="kpi-value" id="totalStudents">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Avg. Engagement</div>
+                    <div class="kpi-value" id="avgEngagement">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Top Scorer</div>
+                    <div class="kpi-value" id="topScorer" style="font-size: 1.2rem; margin-top: 0.5rem;">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Active Sessions</div>
+                    <div class="kpi-value" id="activeSessions">--</div>
+                </div>
+            </section>
 
-                <!-- Market State Visualization -->
-                <section class="card chart-card">
-                    <div class="card-header">
-                        <h2>Profit & Loss Trend</h2>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="profitChart"></canvas>
-                    </div>
-                </section>
+            <section class="charts-grid">
+                <div class="chart-card">
+                    <h3>Engagement Trends across Sessions</h3>
+                    <canvas id="trendsChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Participation Distribution</h3>
+                    <canvas id="distChart"></canvas>
+                </div>
+            </section>
 
-                <!-- Feedback and Status -->
-                <section class="card status-card">
-                    <div class="card-header">
-                        <h2>Market Feedback</h2>
-                    </div>
-                    <div id="feedback-log" class="feedback-log">
-                        <div class="log-entry info">Market initialized. Select inputs for Round 1.</div>
-                    </div>
-                </section>
-
-                <!-- Detailed Metrics -->
-                <section class="card metrics-card">
-                    <div class="card-header">
-                        <h2>Operating Metrics</h2>
-                    </div>
-                    <div class="metrics-grid">
-                        <div class="metric">
-                            <div class="label">Revenue</div>
-                            <div id="res-revenue">$0</div>
-                        </div>
-                        <div class="metric">
-                            <div class="label">Net Profit</div>
-                            <div id="res-profit">$0</div>
-                        </div>
-                        <div class="metric">
-                            <div class="label">Inventory Health</div>
-                            <div class="progress-bar">
-                                <div id="inventory-bar" class="progress-fill" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="metric">
-                            <div class="label">Consumer Satisfaction</div>
-                            <div id="res-satisfaction">Excellent (95%)</div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+            <section class="table-card">
+                <h3>Detailed Performance Table</h3>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Total Score</th>
+                                <th>Sessions Active</th>
+                                <th>Engagement Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Final Score Modal -->
-    <div id="score-modal" class="modal hidden">
-        <div class="modal-content glass">
-            <h1>Performance Analysis</h1>
-            <div class="score-grid">
-                <div class="score-box">
-                    <span class="label">Final Grade</span>
-                    <span id="final-grade" class="grade">A</span>
-                </div>
-                <div id="score-details" class="details"></div>
-            </div>
-            <button id="restart-btn" class="btn-primary">Restart Simulation</button>
-        </div>
-    </div>
-
-    <script src="engine.js"></script>
-    <script src="ui.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
