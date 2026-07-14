@@ -3,92 +3,429 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BDA Analytics | Student Performance Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Long-Run Production Optimization Engine</title>
+    <!-- Tailwind CSS Engine CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plus Jakarta Sans Premium Typography Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%);
+            min-height: 100vh;
+        }
+        .custom-blur {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #D97706 100%);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15);
+        }
+    </style>
 </head>
-<body>
-    <div class="bg-gradient"></div>
-    
-    <div class="dashboard-container">
-        <aside>
-            <div class="logo">BDA Analytics</div>
-            <ul class="nav-links">
-                <li class="active">
-                    <span>🏠</span> Overview
-                </li>
-                <li>
-                    <span>👨‍🎓</span> Students
-                </li>
-                <li>
-                    <span>📈</span> Trends
-                </li>
-                <li>
-                    <span>⚙️</span> Settings
-                </li>
-            </ul>
-        </aside>
+<body class="text-slate-200 antialiased p-4 md:p-8">
 
-        <main>
-            <header>
-                <h1>Performance Overview</h1>
-                <div class="search-box">
-                    <span>🔍</span>
-                    <input type="text" id="studentSearch" placeholder="Search student name...">
-                </div>
-            </header>
-
-            <section class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-label">Total Students</div>
-                    <div class="kpi-value" id="totalStudents">--</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Avg. Engagement</div>
-                    <div class="kpi-value" id="avgEngagement">--</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Top Scorer</div>
-                    <div class="kpi-value" id="topScorer" style="font-size: 1.2rem; margin-top: 0.5rem;">--</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label">Active Sessions</div>
-                    <div class="kpi-value" id="activeSessions">--</div>
-                </div>
-            </section>
-
-            <section class="charts-grid">
-                <div class="chart-card">
-                    <h3>Engagement Trends across Sessions</h3>
-                    <canvas id="trendsChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Participation Distribution</h3>
-                    <canvas id="distChart"></canvas>
-                </div>
-            </section>
-
-            <section class="table-card">
-                <h3>Detailed Performance Table</h3>
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table id="studentTable">
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th>Total Score</th>
-                                <th>Sessions Active</th>
-                                <th>Engagement Level</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <!-- Rows injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
+    <!-- ===================================================================== -->
+    <!-- SECURE ACCESS GATEWAY SYSTEM -->
+    <!-- ===================================================================== -->
+    <div id="security-gateway" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-md text-center shadow-2xl">
+            <h1 class="text-2xl font-extrabold text-blue-500 mb-2">🔒 Production Engine Security</h1>
+            <p class="text-slate-400 text-sm mb-6">Enter credential key to deploy the Long-Run Optimization Simulator.</p>
+            <input type="password" id="security-key" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-lg text-white text-center tracking-widest focus:outline-none focus:border-blue-500 mb-4" placeholder="••••••••">
+            <button onclick="authenticateGateway()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-lg shadow-blue-500/20">Verify Credential Access</button>
+            <p id="security-error" class="text-red-400 text-xs mt-3 hidden">😕 Access denied. Invalid token key.</p>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- ===================================================================== -->
+    <!-- MASTER DASHBOARD WRAPPER -->
+    <!-- ===================================================================== -->
+    <div id="main-application" class="max-w-7xl mx-auto hidden">
+        
+        <!-- Premium Core App Banner -->
+        <div class="header-gradient p-8 rounded-2xl mb-6 text-white">
+            <h1 class="text-3xl font-extrabold flex items-center gap-3">🚀 Long-Run Production Optimization Engine</h1>
+            <p class="text-slate-200 mt-2 font-medium">Enterprise Core Strategy Terminal — Fully Variable Scaling Infrastructure Map</p>
+        </div>
+
+        <!-- Global Efficiency Index Component Banner -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-blue-500/30 p-6 rounded-2xl text-center shadow-xl mb-6">
+            <h2 class="text-xl font-bold text-blue-400">Long-Run Operational Efficiency Index: <span id="idx-global">0.0</span> / 100</h2>
+            <p class="text-amber-400 text-sm font-semibold mt-1">
+                🚀 Optimization Yield: <span id="idx-opt">0.0</span>/50 | 📝 Quiz Accuracy: <span id="idx-quiz">0.0</span>/50
+            </p>
+            <p class="text-slate-400 text-xs mt-2">System Constraint Note: Maximizing long-run index parameters requires configuring an exact least-cost asset footprint combinations layout.</p>
+        </div>
+
+        <!-- 2-Column Application Workspace Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            
+            <!-- Side Navigation Pane Panel -->
+            <div class="lg:col-span-1 bg-slate-900/50 custom-blur p-4 rounded-xl flex flex-col gap-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">Navigation Hub</h3>
+                <button onclick="switchTab('sandbox')" id="nav-sandbox" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white transition">🚀 Simulator Sandbox</button>
+                <button onclick="switchTab('theory')" id="nav-theory" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📖 Core Theory Deep Dive</button>
+                <button onclick="switchTab('expansion')" id="nav-expansion" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📈 Geometric Path Map</button>
+                <button onclick="switchTab('quiz')" id="nav-quiz" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📝 Knowledge Check</button>
+            </div>
+
+            <!-- Content Workspace Center Window -->
+            <div class="lg:col-span-3">
+
+                <!-- TAB CONTAINER: 1. SANDBOX -->
+                <div id="panel-sandbox" class="space-y-6">
+                    <div class="border-b border-amber-500/20 pb-3 mb-4">
+                        <h2 class="text-amber-400 font-bold text-xl">🚀 Long-Run Isoquant & Cost Minimization Sandbox</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Block: Controls -->
+                        <div class="bg-blue-500/5 custom-blur border-l-4 border-blue-500 p-6 rounded-xl space-y-4">
+                            <h3 class="text-blue-400 font-bold text-lg">⚙️ Structural Settings</h3>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Wage Rate (w): $<span id="lbl-w">20</span></label>
+                                <input type="range" id="val-w" min="10" max="100" value="20" step="5" oninput="updateValues()" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Capital Rental Rate (r): $<span id="lbl-r">40</span></label>
+                                <input type="range" id="val-r" min="10" max="100" value="40" step="5" oninput="updateValues()" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Labor Elasticity (&alpha;): <span id="lbl-alpha">0.6</span></label>
+                                <input type="range" id="val-alpha" min="0.1" max="1.5" value="0.6" step="0.1" oninput="updateValues()" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Capital Elasticity (&beta;): <span id="lbl-beta">0.4</span></label>
+                                <input type="range" id="val-beta" min="0.1" max="1.5" value="0.4" step="0.1" oninput="updateValues()" class="w-full">
+                            </div>
+                        </div>
+
+                        <!-- Right Block: Dynamic Allocations -->
+                        <div class="bg-amber-500/5 custom-blur border-l-4 border-amber-500 p-6 rounded-xl space-y-4">
+                            <h3 class="text-amber-400 font-bold text-lg">🛠️ Capacity Blueprint Adjustments</h3>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Deploy Labor Units (L): <span id="lbl-l">30</span></label>
+                                <input type="range" id="val-l" min="1" max="100" value="30" oninput="updateValues()" class="w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Deploy Capital Footprint (K): <span id="lbl-k">20</span></label>
+                                <input type="range" id="val-k" min="1" max="100" value="20" oninput="updateValues()" class="w-full">
+                            </div>
+                            <button onclick="calculateLongRunMetrics()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 text-white font-semibold py-2.5 rounded-lg transition duration-200 mt-2">🚀 Calculate Optimization System</button>
+                        </div>
+                    </div>
+
+                    <!-- Sandbox Yield Results (Hidden Initially) -->
+                    <div id="sandbox-results" class="hidden space-y-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
+                                <h4 class="text-slate-400 text-xs font-medium">Total Output (Q)</h4>
+                                <div id="res-q" class="text-amber-400 font-bold text-2xl mt-1">0.0 Units</div>
+                            </div>
+                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
+                                <h4 class="text-slate-400 text-xs font-medium">Total Outlay (TC)</h4>
+                                <div id="res-tc" class="text-amber-400 font-bold text-2xl mt-1">$0.00</div>
+                            </div>
+                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
+                                <h4 class="text-slate-400 text-xs font-medium">Average Unit Cost</h4>
+                                <div id="res-ac" class="text-amber-400 font-bold text-2xl mt-1">$0.00</div>
+                            </div>
+                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
+                                <h4 class="text-slate-400 text-xs font-medium">Returns Type</h4>
+                                <div id="res-rts" class="text-blue-400 font-semibold text-sm mt-2">CRS ⚖️</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-500/10 custom-blur p-5 rounded-xl border border-blue-500/20">
+                            <h4 id="res-status-title" class="text-blue-400 font-bold text-base mb-1">Diagnosis Matrix Status</h4>
+                            <p class="text-sm text-slate-300">Target Cost-Minimizing Ratio (K/L): <strong id="res-opt-ratio" class="text-white">0.0</strong> | Deployed Asset Ratio (K/L): <strong id="res-curr-ratio" class="text-white">0.0</strong></p>
+                            <p class="text-xs text-slate-400 mt-2">Optimization Instruction: Alter resource sliders until current configuration metrics precisely meet baseline calibration targets.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB CONTAINER: 2. THEORY -->
+                <div id="panel-theory" class="space-y-6 hidden">
+                    <div class="border-b border-amber-500/20 pb-3 mb-4">
+                        <h2 class="text-amber-400 font-bold text-xl">📚 Structural Mechanics of Long-Run Microeconomic Production</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-blue-500/5 custom-blur border-l-4 border-blue-500 p-5 rounded-xl">
+                            <h3 class="text-blue-400 font-bold mb-2">🚀 Long-Run Production Functions & Isoquants</h3>
+                            <p class="text-sm text-slate-300 leading-relaxed mb-3">In analytical microeconomics, the <strong>Long Run</strong> represents an optimization space where <strong>all factors of production are fully variable</strong>. Entities are unconstrained by static capital boundaries or building spatial limitations.</p>
+                            <p class="text-sm text-slate-300 mb-2"><strong>The Isoquant Frontier:</strong> An isoquant maps all resource configurations yielding an identical baseline performance yield metric (Q). The absolute negative slope of this curve represents the Marginal Rate of Technical Substitution:</p>
+                            <div class="bg-slate-950 p-3 rounded-lg text-center font-mono text-blue-400 my-2 text-sm">MRTS<sub>L,K</sub> = &Delta;K / &Delta;L = MP<sub>L</sub> / MP<sub>K</sub></div>
+                        </div>
+                        <div class="bg-amber-500/5 custom-blur border-l-4 border-amber-500 p-5 rounded-xl">
+                            <h3 class="text-amber-400 font-bold mb-2">⚖️ Returns to Scale Parameter Tracking</h3>
+                            <p class="text-sm text-slate-300 leading-relaxed">Returns to scale evaluates how corporate product volume responds when all variable resource networks are increased proportionally by an identical factor (&lambda;):</p>
+                            <ul class="list-disc list-inside text-sm text-slate-400 mt-2 space-y-1">
+                                <li><strong class="text-slate-200">Constant Returns to Scale (CRS):</strong> &alpha; + &beta; = 1. Output scales linearly with inputs.</li>
+                                <li><strong class="text-slate-200">Increasing Returns to Scale (IRS):</strong> &alpha; + &beta; &gt; 1. Output scales exponentially due to operational specializations.</li>
+                                <li><strong class="text-slate-200">Decreasing Returns to Scale (DRS):</strong> &alpha; + &beta; &lt; 1. Management complexities create fractional friction losses.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB CONTAINER: 3. GEOMETRIC EXPANSION -->
+                <div id="panel-expansion" class="space-y-6 hidden">
+                    <div class="border-b border-amber-500/20 pb-3 mb-4">
+                        <h2 class="text-amber-400 font-bold text-xl">📈 Core Mathematical Intersections & Long-Run Expansion Paths</h2>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-xl space-y-4">
+                        <h3 class="text-amber-400 font-semibold text-lg">🗺️ Long-Run Optimization & The Tangency Condition</h3>
+                        <p class="text-sm text-slate-300">Least-cost production balancing requires overlaying multi-variable Isoquants onto financial Isocost boundary tracks:</p>
+                        <ul class="list-disc list-inside text-sm text-slate-400 space-y-2 pl-2">
+                            <li><strong class="text-slate-200">Isocost Layout Layer:</strong> Tracks all configuration matrices mapping to identical operational expenditure budgets (<span class="text-blue-400">TC = wL + rK</span>). Slope matrix value equals factor price ratios (<span class="text-blue-400">-w/r</span>).</li>
+                            <li><strong class="text-slate-200">Equilibrium Optimization:</strong> Minimizing structural overhead dictates identifying the tangency sweet-spot where the isoquant vector trajectory slope matches factor valuation parameters exactly:</li>
+                        </ul>
+                        <div class="bg-slate-950 p-4 rounded-xl text-center font-mono text-xl text-emerald-400 my-4">
+                            MRTS<sub>L,K</sub> = MP<sub>L</sub> / MP<sub>K</sub> = w / r &rArr; (&alpha;K) / (&beta;L) = w / r
+                        </div>
+                        <p class="text-sm text-slate-300 mt-2">Connecting these progressive optimization coordinates dynamically forms the firm's true <strong class="text-amber-400">Long-Run Expansion Path</strong>, mapping ideal resource scaling pathways cleanly over time.</p>
+                    </div>
+                </div>
+
+                <!-- TAB CONTAINER: 4. QUIZ KNOWLEDGE CHECK -->
+                <div id="panel-quiz" class="space-y-6 hidden">
+                    <div class="border-b border-amber-500/20 pb-3 mb-4">
+                        <h2 class="text-amber-400 font-bold text-xl">📝 Master Long-Run Production Knowledge Evaluation Deck</h2>
+                    </div>
+                    <div class="bg-slate-900/40 custom-blur p-6 rounded-xl space-y-6">
+                        
+                        <!-- Question 1 -->
+                        <div class="space-y-2">
+                            <h3 class="font-medium text-slate-200">1. What condition mathematically characterizes the optimal, least-cost combinations of inputs along a firm's long-run expansion path?</h3>
+                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="A"> A) Marginal product of all variable assets drops to absolute zero.</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="B"> B) The MRTS is perfectly equal to the ratio of the factor input prices (w/r).</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="C"> C) Labor and capital inputs are utilized in an identical 1:1 hardware footprint ratio.</label>
+                            </div>
+                        </div>
+
+                        <!-- Question 2 -->
+                        <div class="space-y-2">
+                            <h3 class="font-medium text-slate-200">2. If a company doubles both its labor force and its capital assets, and total output increases by exactly 150%, how is this function categorized?</h3>
+                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="A"> A) Decreasing Returns to Scale (DRS)</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="B"> B) Constant Returns to Scale (CRS)</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="C"> C) Increasing Returns to Scale (IRS)</label>
+                            </div>
+                        </div>
+
+                        <!-- Question 3 -->
+                        <div class="space-y-2">
+                            <h3 class="font-medium text-slate-200">3. Which statement precisely describes a production isoquant line graph?</h3>
+                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="A"> A) All asset combinations that yield the exact same amount of absolute total cost outlays.</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="B"> B) The maximum combination of goods two corporate entities can trade.</label>
+                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="C"> C) All combinations of labor and capital inputs that generate the exact same quantity of total output.</label>
+                            </div>
+                        </div>
+
+                        <button onclick="evaluateQuizDeck()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-blue-500/10">Submit Performance Metrics</button>
+                        
+                        <!-- Quiz Review Output Window -->
+                        <div id="quiz-results" class="hidden space-y-3 pt-4 border-t border-slate-800">
+                            <h3 class="font-bold text-lg text-amber-400">🎉 Quiz Evaluation Score: <span id="quiz-score">0</span> / 50 Points</h3>
+                            <div id="q1-review" class="p-3 rounded-lg text-xs font-medium"></div>
+                            <div id="q2-review" class="p-3 rounded-lg text-xs font-medium"></div>
+                            <div id="q3-review" class="p-3 rounded-lg text-xs font-medium"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- SYSTEM FOOTER DATA TERMINAL -->
+        <!-- ===================================================================== -->
+        <footer class="mt-12 pt-4 border-t border-slate-800 grid grid-cols-1 md:grid-cols-3 text-center md:text-left text-slate-500 text-xs gap-4 mb-4">
+            <div>🎓 Production Optimization Engine | Corporate Strategy Hub</div>
+            <div class="md:text-center">🚀 Fully Variable Asset Scale Optimization Active</div>
+            <div class="md:text-right">⏰ Terminal Sync Lock Date: <span id="footer-time">2026-07-14</span></div>
+        </footer>
+    </div>
+
+    <!-- Core Runtime Execution Scripts Engine -->
+    <script>
+        // System Global State Variables
+        let state = {
+            lr_efficiency: 0.0,
+            knowledge_rating: 0.0
+        };
+
+        // Secure Entry Gateway Check
+        function authenticateGateway() {
+            const passwordField = document.getElementById("security-key");
+            const errorMsg = document.getElementById("security-error");
+            
+            if (passwordField.value === "PED2026") {
+                document.getElementById("security-gateway").classList.add("hidden");
+                document.getElementById("main-application").classList.remove("hidden");
+                updateIndexUI();
+                
+                // Establish current workspace timestamp context
+                const now = new Date();
+                document.getElementById("footer-time").innerText = now.toISOString().slice(0, 19).replace('T', ' ');
+            } else {
+                errorMsg.classList.remove("hidden");
+                passwordField.value = "";
+            }
+        }
+
+        // Interface Variable Label Dynamic Binding Updates
+        function updateValues() {
+            const w = document.getElementById("val-w").value;
+            const r = document.getElementById("val-r").value;
+            const alpha = document.getElementById("val-alpha").value;
+            const beta = document.getElementById("val-beta").value;
+            const l = document.getElementById("val-l").value;
+            const k = document.getElementById("val-k").value;
+
+            document.getElementById("lbl-w").innerText = w;
+            document.getElementById("lbl-r").innerText = r;
+            document.getElementById("lbl-alpha").innerText = alpha;
+            document.getElementById("lbl-beta").innerText = beta;
+            document.getElementById("lbl-l").innerText = l;
+            document.getElementById("lbl-k").innerText = k;
+        }
+
+        // Tab Controller Layout Dispatcher
+        function switchTab(targetTab) {
+            const tabs = ['sandbox', 'theory', 'expansion', 'quiz'];
+            tabs.forEach(t => {
+                document.getElementById(`panel-${t}`).classList.add("hidden");
+                document.getElementById(`nav-${t}`).classList.remove("bg-blue-600", "text-white");
+                document.getElementById(`nav-${t}`).classList.add("hover:bg-slate-800");
+            });
+
+            document.getElementById(`panel-${targetTab}`).classList.remove("hidden");
+            document.getElementById(`nav-${targetTab}`).classList.add("bg-blue-600", "text-white");
+            document.getElementById(`nav-${targetTab}`).classList.remove("hover:bg-slate-800");
+        }
+
+        // Global Score Banner Logic Calculations Engine
+        function updateIndexUI() {
+            const combined = state.lr_efficiency + state.knowledge_rating;
+            document.getElementById("idx-opt").innerText = state.lr_efficiency.toFixed(1);
+            document.getElementById("idx-quiz").innerText = state.knowledge_rating.toFixed(1);
+            document.getElementById("idx-global").innerText = Math.max(0, Math.min(100, combined)).toFixed(1);
+        }
+
+        // Mathematical Calculator Simulator Core Engine Routine
+        function calculateLongRunMetrics() {
+            const w = parseFloat(document.getElementById("val-w").value);
+            const r = parseFloat(document.getElementById("val-r").value);
+            const alpha = parseFloat(document.getElementById("val-alpha").value);
+            const beta = parseFloat(document.getElementById("val-beta").value);
+            const L = parseFloat(document.getElementById("val-l").value);
+            const K = parseFloat(document.getElementById("val-k").value);
+
+            const techCoeff = 10.0;
+            const Q = techCoeff * Math.pow(L, alpha) * Math.pow(K, beta);
+            const TC = (w * L) + (r * K);
+            const unitCost = Q > 0 ? (TC / Q) : 0.0;
+
+            const optimalKL = (beta * w) / (alpha * r);
+            const currentKL = K / L;
+            const ratioDeviation = Math.abs(currentKL - optimalKL) / optimalKL;
+
+            // Compute structural Returns to Scale profile
+            const rtsSum = alpha + beta;
+            let rtsStatus = "";
+            if (Math.abs(rtsSum - 1.0) < 0.01) rtsStatus = "Constant Returns to Scale (CRS) ⚖️";
+            else if (rtsSum > 1.0) rtsStatus = "Increasing Returns to Scale (IRS) 🚀";
+            else rtsStatus = "Decreasing Returns to Scale (DRS) 📉";
+
+            // Grade operational matrix configurations layout metrics
+            let points = 0.0;
+            let efficiencyStatus = "";
+            const statusBox = document.getElementById("res-status-title");
+
+            if (ratioDeviation <= 0.05) {
+                efficiencyStatus = "Optimal Input Mix: Perfect Alignment Chosen 🌟";
+                points = 50.0;
+            } else if (ratioDeviation <= 0.25) {
+                efficiencyStatus = "Suboptimal Mix: Minor Resource Friction Detected ⚠️";
+                points = 35.0;
+            } else {
+                efficiencyStatus = "Inefficient Mix: Major Resource Imbalance 🚨";
+                points = 15.0;
+            }
+
+            state.lr_efficiency = points;
+            updateIndexUI();
+
+            // Bind values dynamically out to visible layout display blocks
+            document.getElementById("res-q").innerText = Q.toFixed(1) + " Units";
+            document.getElementById("res-tc").innerText = "$" + TC.toFixed(2);
+            document.getElementById("res-ac").innerText = "$" + unitCost.toFixed(2);
+            document.getElementById("res-rts").innerText = rtsStatus;
+            
+            statusBox.innerText = "Allocation Diagnosis: " + efficiencyStatus;
+            document.getElementById("res-opt-ratio").innerText = optimalKL.toFixed(3);
+            document.getElementById("res-curr-ratio").innerText = currentKL.toFixed(3);
+
+            document.getElementById("sandbox-results").classList.remove("hidden");
+        }
+
+        // Quiz Metrics Processing Evaluator System Engine
+        function evaluateQuizDeck() {
+            let score = 0;
+            
+            const q1 = document.querySelector('input[name="q1"]:checked');
+            const q2 = document.querySelector('input[name="q2"]:checked');
+            const q3 = document.querySelector('input[name="q3"]:checked');
+
+            const q1Box = document.getElementById("q1-review");
+            const q2Box = document.getElementById("q2-review");
+            const q3Box = document.getElementById("q3-review");
+
+            // Evaluate Question 1
+            if (q1 && q1.value === "B") {
+                score += 16.66;
+                q1Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                q1Box.innerText = "✓ Q1 Correct: MRTS = w/r establishes absolute long-run structural cost minimization parameters.";
+            } else {
+                q1Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                q1Box.innerText = "✗ Q1 Review Needed: Long-run optimization dictates technical trading balance ratios (MRTS) match exact asset price variables (w/r).";
+            }
+
+            // Evaluate Question 2
+            if (q2 && q2.value === "C") {
+                score += 16.67;
+                q2Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                q2Box.innerText = "✓ Q2 Correct: Proportional resource updates yielding hyper-proportional capacity growth defines IRS thresholds.";
+            } else {
+                q2Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                q2Box.innerText = "✗ Q2 Review Needed: Scaling resource footprints 2x resulting in 2.5x total product expansion indicates Increasing Returns to Scale parameters.";
+            }
+
+            // Evaluate Question 3
+            if (q3 && q3.value === "C") {
+                score += 16.67;
+                q3Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                q3Box.innerText = "✓ Q3 Correct: Isoquants strictly chart configuration sets hitting identical absolute performance metrics.";
+            } else {
+                q3Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                q3Box.innerText = "✗ Q3 Review Needed: Isoquant maps trace equivalent capacity outputs (iso = equal; quant = quantity), differing fundamentally from cost profiles.";
+            }
+
+            state.knowledge_rating = score;
+            updateIndexUI();
+
+            document.getElementById("quiz-score").innerText = Math.round(score);
+            document.getElementById("quiz-results").classList.remove("hidden");
+        }
+    </script>
 </body>
 </html>
