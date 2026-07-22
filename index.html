@@ -1,431 +1,533 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Long-Run Production Optimization Engine</title>
-    <!-- Tailwind CSS Engine CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Plus Jakarta Sans Premium Typography Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%);
-            min-height: 100vh;
-        }
-        .custom-blur {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .header-gradient {
-            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #D97706 100%);
-            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15);
-        }
-    </style>
-</head>
-<body class="text-slate-200 antialiased p-4 md:p-8">
+import streamlit as st
+import pandas as pd
+import numpy as np
+from datetime import datetime
 
-    <!-- ===================================================================== -->
-    <!-- SECURE ACCESS GATEWAY SYSTEM -->
-    <!-- ===================================================================== -->
-    <div id="security-gateway" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-md text-center shadow-2xl">
-            <h1 class="text-2xl font-extrabold text-blue-500 mb-2">🔒 Production Engine Security</h1>
-            <p class="text-slate-400 text-sm mb-6">Enter credential key to deploy the Long-Run Optimization Simulator.</p>
-            <input type="password" id="security-key" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-lg text-white text-center tracking-widest focus:outline-none focus:border-blue-500 mb-4" placeholder="••••••••">
-            <button onclick="authenticateGateway()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-lg shadow-blue-500/20">Verify Credential Access</button>
-            <p id="security-error" class="text-red-400 text-xs mt-3 hidden">😕 Access denied. Invalid token key.</p>
-        </div>
+# =====================================================================
+# PAGE CONFIGURATION
+# =====================================================================
+st.set_page_config(
+    page_title="Long-Run Production & Cost Optimization Engine",
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =====================================================================
+# SECURE ACCESS SYSTEM
+# =====================================================================
+def check_password():
+    """Returns `True` if the user enters the correct security key."""
+    def password_entered():
+        if st.session_state["password"] == "PED2026":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        st.markdown("<h1 style='text-align: center; color: #3B82F6;'>🔒 Production Engine Security</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>Enter credential key to deploy the Long-Run Optimization Simulator.</p>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 1.5, 1])
+        with col2:
+            st.text_input("Security Password", type="password", on_change=password_entered, key="password")
+        return False
+    
+    elif not st.session_state["password_correct"]:
+        st.markdown("<h1 style='text-align: center; color: #3B82F6;'>🔒 Production Engine Security</h1>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 1.5, 1])
+        with col2:
+            st.text_input("Security Password", type="password", on_change=password_entered, key="password")
+            st.error("😕 Access denied. Invalid token key.")
+        return False
+    
+    return True
+
+if not check_password():
+    st.stop()
+
+# =====================================================================
+# CORE DESIGN SYSTEM (SLATE, COBALT & AMBER METROPOLIS THEME)
+# =====================================================================
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    /* Main Background & Core Canvas Layout */
+    .stApp { background: linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%); }
+    
+    /* Premium Header Area Custom Styling */
+    .header-gradient {
+        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #D97706 100%);
+        padding: 2.5rem 2rem;
+        border-radius: 14px;
+        margin-bottom: 2rem;
+        box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15);
+    }
+    .header-gradient h1 { color: #FFFFFF !important; font-size: 2.4rem !important; font-weight: 800 !important; margin: 0 !important; }
+    .header-gradient p { color: rgba(255, 255, 255, 0.9) !important; font-size: 1.05rem !important; margin: 0.5rem 0 0 0 !important; }
+    
+    /* Dynamic Performance Score Indicator */
+    .score-banner {
+        background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #FFFFFF; padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 2rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    .score-banner h2 { color: #60A5FA !important; margin: 0 !important; font-weight: 700; font-size: 1.6rem; }
+    
+    /* Elegant Content Blocks (Containers/Forms) */
+    .stContainer, .stForm {
+        background: rgba(30, 41, 59, 0.7) !important; 
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px; padding: 1.75rem; margin-bottom: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); backdrop-filter: blur(12px);
+    }
+    
+    /* System Division Headers */
+    .section-header {
+        color: #FBBF24; font-weight: 700; font-size: 1.4rem; margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem; border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+    }
+    
+    /* Concept Info Cards & Box Systems */
+    .concept-note, .case-study { padding: 1.25rem; border-radius: 8px; margin: 1.2rem 0; }
+    .concept-note { background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; }
+    .concept-note h3 { color: #60A5FA; margin-top: 0 !important; font-size: 1.2rem; }
+    .case-study { background: rgba(217, 119, 6, 0.08); border-left: 4px solid #D97706; }
+    .case-study h4 { color: #F59E0B; margin-top: 0 !important; font-size: 1.2rem; }
+    
+    /* Dynamic Metric Highlight Blocks */
+    .metric-card {
+        background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 1.25rem; border-radius: 8px; text-align: center;
+    }
+    .metric-card h3 { color: #94A3B8; font-size: 1.05rem; margin: 0 0 0.5rem 0; }
+    .metric-value { color: #FBBF24; font-size: 1.8rem; font-weight: 700; margin: 0.25rem 0; }
+    
+    /* Interface Control Elements / Buttons */
+    .stButton > button, .stFormSubmitButton > button {
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important; color: white !important;
+        border: none !important; padding: 0.65rem 1.75rem !important; border-radius: 6px !important;
+        font-weight: 600 !important; transition: all 0.2s ease !important;
+    }
+    .stButton > button:hover, .stFormSubmitButton > button:hover { 
+        transform: translateY(-1px) !important; 
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important; 
+    }
+    
+    /* Framework Global Text Elements Adjustments */
+    .stMarkdown, p, li { color: #E2E8F0 !important; font-size: 0.98rem; line-height: 1.6; }
+    .stSidebar { background: #0F172A !important; border-right: 1px solid rgba(255, 255, 255, 0.05); }
+</style>
+""", unsafe_allow_html=True)
+
+# =====================================================================
+# SESSION STATE SYSTEM MANAGEMENT
+# =====================================================================
+def init_system_state():
+    defaults = {
+        'lr_calculated': False,
+        'lr_efficiency': 0.0,
+        'knowledge_rating': 0.0,
+        'lr_history': [],
+        'lr_round_counter': 0,
+        'quiz_done': False,
+        'ans1_ok': False, 'ans2_ok': False, 'ans3_ok': False, 'ans4_ok': False
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+init_system_state()
+
+# =====================================================================
+# SIDEBAR CONTROL DECK
+# =====================================================================
+with st.sidebar:
+    st.markdown("### 🚀 Long-Run Operations")
+    nav_selection = st.radio(
+        "Navigation Hub:",
+        options=[
+            "🚀 Long-Run Simulator Sandbox",
+            "📖 Core Production Theory",
+            "📊 Cost Economics & Financial Taxonomy",
+            "📈 Geometric Expansion Paths",
+            "📝 Operational Knowledge Check"
+        ]
+    )
+
+# =====================================================================
+# LIVE SCORE TRACKING ENGINE
+# =====================================================================
+score_container = st.container()
+with score_container:
+    combined_raw = st.session_state.lr_efficiency + st.session_state.knowledge_rating
+    final_score = max(0.0, min(100.0, round(combined_raw, 1)))
+    
+    st.markdown(f"""
+    <div class="score-banner">
+        <h2>Long-Run Operational Efficiency Index: {final_score} / 100</h2>
+        <p style='color: #FBBF24; margin: 0.25rem 0 0 0;'>
+            🚀 Optimization Yield: {round(st.session_state.lr_efficiency, 1)}/50 | 
+            📝 Quiz Accuracy: {round(st.session_state.knowledge_rating, 1)}/50
+        </p>
+        <small style='color: #94A3B8;'>System Constraint Note: Maximizing long-run index parameters requires configuring an exact least-cost asset footprint combinations layout.</small>
     </div>
+    """, unsafe_allow_html=True)
 
-    <!-- ===================================================================== -->
-    <!-- MASTER DASHBOARD WRAPPER -->
-    <!-- ===================================================================== -->
-    <div id="main-application" class="max-w-7xl mx-auto hidden">
+# =====================================================================
+# INTERACTIVE ROUTING ARCHITECTURE
+# =====================================================================
+
+# --- SECTION 1: LONG RUN SIMULATOR ---
+if nav_selection == "🚀 Long-Run Simulator Sandbox":
+    st.markdown('<div class="section-header">🚀 Long-Run Isoquant & Cost Minimization Sandbox</div>', unsafe_allow_html=True)
+    panel_left, panel_right = st.columns([1, 1.2])
+    
+    with panel_left:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>📌 Long-Run Scale Optimization</h3>
+        <p><strong>All Inputs Are Variable:</strong> In the long run, your facility can scale both <strong>Workforce (Labor - $L$)</strong> and <strong>Infrastructure (Capital - $K$)</strong> without capacity limits.</p>
+        <p><strong>Production Function:</strong> Modeled via a non-linear Cobb-Douglas framework:
+        $$Q = A \cdot L^\alpha \cdot K^\beta$$</p>
+        <p><strong>The Cost-Minimization Target:</strong> To achieve optimal output efficiency for a given budget, the firm must align inputs such that the Marginal Rate of Technical Substitution ($MRTS$) equals the input factor price ratio:
+        $$MRTS_{L,K} = \frac{MP_L}{MP_K} = \frac{w}{r} \implies \frac{\alpha K}{\beta L} = \frac{w}{r}$$</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        <!-- Premium Core App Banner -->
-        <div class="header-gradient p-8 rounded-2xl mb-6 text-white">
-            <h1 class="text-3xl font-extrabold flex items-center gap-3">🚀 Long-Run Production Optimization Engine</h1>
-            <p class="text-slate-200 mt-2 font-medium">Enterprise Core Strategy Terminal — Fully Variable Scaling Infrastructure Map</p>
-        </div>
+        st.markdown("### ⚙️ Factor Input Prices & Elasticity Matrix")
+        w_price = st.number_input("Wage Rate ($w$ / Unit of Labor):", min_value=1.0, max_value=200.0, value=20.0, step=5.0)
+        r_price = st.number_input("Capital Rental Rate ($r$ / Unit of Capital):", min_value=1.0, max_value=200.0, value=40.0, step=5.0)
+        
+        st.markdown("##### Cobb-Douglas Output Scaling Parameters")
+        alpha_val = st.slider("Labor Output Elasticity ($\\alpha$):", min_value=0.1, max_value=1.5, value=0.6, step=0.1)
+        beta_val = st.slider("Capital Output Elasticity ($\\beta$):", min_value=0.1, max_value=1.5, value=0.4, step=0.1)
 
-        <!-- Global Efficiency Index Component Banner -->
-        <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-blue-500/30 p-6 rounded-2xl text-center shadow-xl mb-6">
-            <h2 class="text-xl font-bold text-blue-400">Long-Run Operational Efficiency Index: <span id="idx-global">0.0</span> / 100</h2>
-            <p class="text-amber-400 text-sm font-semibold mt-1">
-                🚀 Optimization Yield: <span id="idx-opt">0.0</span>/50 | 📝 Quiz Accuracy: <span id="idx-quiz">0.0</span>/50
-            </p>
-            <p class="text-slate-400 text-xs mt-2">System Constraint Note: Maximizing long-run index parameters requires configuring an exact least-cost asset footprint combinations layout.</p>
-        </div>
-
-        <!-- 2-Column Application Workspace Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+    with panel_right:
+        st.markdown('<div class="case-study"><h4>🛠️ Operational Capacity Scaling Controls</h4></div>', unsafe_allow_html=True)
+        st.write("Adjust both parameters simultaneously to configure your factory blueprint size.")
+        
+        input_l = st.slider("Select Long-Run Labor Force ($L$):", min_value=1, max_value=100, value=30, step=1)
+        input_k = st.slider("Select Long-Run Capital Footprint ($K$):", min_value=1, max_value=100, value=20, step=1)
+        
+        compute_lr = st.button("🚀 Calculate Long-Run System Dynamics", type="primary", use_container_width=True)
+        
+        if compute_lr:
+            tech_coeff = 10.0
+            q_output = float(round(tech_coeff * (input_l ** alpha_val) * (input_k ** beta_val), 1))
+            total_cost = float(round((w_price * input_l) + (r_price * input_k), 2))
+            unit_cost = float(round(total_cost / q_output, 2)) if q_output > 0 else 0.0
             
-            <!-- Side Navigation Pane Panel -->
-            <div class="lg:col-span-1 bg-slate-900/50 custom-blur p-4 rounded-xl flex flex-col gap-2">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">Navigation Hub</h3>
-                <button onclick="switchTab('sandbox')" id="nav-sandbox" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white transition">🚀 Simulator Sandbox</button>
-                <button onclick="switchTab('theory')" id="nav-theory" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📖 Core Theory Deep Dive</button>
-                <button onclick="switchTab('expansion')" id="nav-expansion" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📈 Geometric Path Map</button>
-                <button onclick="switchTab('quiz')" id="nav-quiz" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-800 transition">📝 Knowledge Check</button>
-            </div>
-
-            <!-- Content Workspace Center Window -->
-            <div class="lg:col-span-3">
-
-                <!-- TAB CONTAINER: 1. SANDBOX -->
-                <div id="panel-sandbox" class="space-y-6">
-                    <div class="border-b border-amber-500/20 pb-3 mb-4">
-                        <h2 class="text-amber-400 font-bold text-xl">🚀 Long-Run Isoquant & Cost Minimization Sandbox</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Left Block: Controls -->
-                        <div class="bg-blue-500/5 custom-blur border-l-4 border-blue-500 p-6 rounded-xl space-y-4">
-                            <h3 class="text-blue-400 font-bold text-lg">⚙️ Structural Settings</h3>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Wage Rate (w): $<span id="lbl-w">20</span></label>
-                                <input type="range" id="val-w" min="10" max="100" value="20" step="5" oninput="updateValues()" class="w-full">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Capital Rental Rate (r): $<span id="lbl-r">40</span></label>
-                                <input type="range" id="val-r" min="10" max="100" value="40" step="5" oninput="updateValues()" class="w-full">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Labor Elasticity (&alpha;): <span id="lbl-alpha">0.6</span></label>
-                                <input type="range" id="val-alpha" min="0.1" max="1.5" value="0.6" step="0.1" oninput="updateValues()" class="w-full">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Capital Elasticity (&beta;): <span id="lbl-beta">0.4</span></label>
-                                <input type="range" id="val-beta" min="0.1" max="1.5" value="0.4" step="0.1" oninput="updateValues()" class="w-full">
-                            </div>
-                        </div>
-
-                        <!-- Right Block: Dynamic Allocations -->
-                        <div class="bg-amber-500/5 custom-blur border-l-4 border-amber-500 p-6 rounded-xl space-y-4">
-                            <h3 class="text-amber-400 font-bold text-lg">🛠️ Capacity Blueprint Adjustments</h3>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Deploy Labor Units (L): <span id="lbl-l">30</span></label>
-                                <input type="range" id="val-l" min="1" max="100" value="30" oninput="updateValues()" class="w-full">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Deploy Capital Footprint (K): <span id="lbl-k">20</span></label>
-                                <input type="range" id="val-k" min="1" max="100" value="20" oninput="updateValues()" class="w-full">
-                            </div>
-                            <button onclick="calculateLongRunMetrics()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 text-white font-semibold py-2.5 rounded-lg transition duration-200 mt-2">🚀 Calculate Optimization System</button>
-                        </div>
-                    </div>
-
-                    <!-- Sandbox Yield Results (Hidden Initially) -->
-                    <div id="sandbox-results" class="hidden space-y-6">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
-                                <h4 class="text-slate-400 text-xs font-medium">Total Output (Q)</h4>
-                                <div id="res-q" class="text-amber-400 font-bold text-2xl mt-1">0.0 Units</div>
-                            </div>
-                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
-                                <h4 class="text-slate-400 text-xs font-medium">Total Outlay (TC)</h4>
-                                <div id="res-tc" class="text-amber-400 font-bold text-2xl mt-1">$0.00</div>
-                            </div>
-                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
-                                <h4 class="text-slate-400 text-xs font-medium">Average Unit Cost</h4>
-                                <div id="res-ac" class="text-amber-400 font-bold text-2xl mt-1">$0.00</div>
-                            </div>
-                            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-center shadow-lg">
-                                <h4 class="text-slate-400 text-xs font-medium">Returns Type</h4>
-                                <div id="res-rts" class="text-blue-400 font-semibold text-sm mt-2">CRS ⚖️</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-blue-500/10 custom-blur p-5 rounded-xl border border-blue-500/20">
-                            <h4 id="res-status-title" class="text-blue-400 font-bold text-base mb-1">Diagnosis Matrix Status</h4>
-                            <p class="text-sm text-slate-300">Target Cost-Minimizing Ratio (K/L): <strong id="res-opt-ratio" class="text-white">0.0</strong> | Deployed Asset Ratio (K/L): <strong id="res-curr-ratio" class="text-white">0.0</strong></p>
-                            <p class="text-xs text-slate-400 mt-2">Optimization Instruction: Alter resource sliders until current configuration metrics precisely meet baseline calibration targets.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB CONTAINER: 2. THEORY -->
-                <div id="panel-theory" class="space-y-6 hidden">
-                    <div class="border-b border-amber-500/20 pb-3 mb-4">
-                        <h2 class="text-amber-400 font-bold text-xl">📚 Structural Mechanics of Long-Run Microeconomic Production</h2>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="bg-blue-500/5 custom-blur border-l-4 border-blue-500 p-5 rounded-xl">
-                            <h3 class="text-blue-400 font-bold mb-2">🚀 Long-Run Production Functions & Isoquants</h3>
-                            <p class="text-sm text-slate-300 leading-relaxed mb-3">In analytical microeconomics, the <strong>Long Run</strong> represents an optimization space where <strong>all factors of production are fully variable</strong>. Entities are unconstrained by static capital boundaries or building spatial limitations.</p>
-                            <p class="text-sm text-slate-300 mb-2"><strong>The Isoquant Frontier:</strong> An isoquant maps all resource configurations yielding an identical baseline performance yield metric (Q). The absolute negative slope of this curve represents the Marginal Rate of Technical Substitution:</p>
-                            <div class="bg-slate-950 p-3 rounded-lg text-center font-mono text-blue-400 my-2 text-sm">MRTS<sub>L,K</sub> = &Delta;K / &Delta;L = MP<sub>L</sub> / MP<sub>K</sub></div>
-                        </div>
-                        <div class="bg-amber-500/5 custom-blur border-l-4 border-amber-500 p-5 rounded-xl">
-                            <h3 class="text-amber-400 font-bold mb-2">⚖️ Returns to Scale Parameter Tracking</h3>
-                            <p class="text-sm text-slate-300 leading-relaxed">Returns to scale evaluates how corporate product volume responds when all variable resource networks are increased proportionally by an identical factor (&lambda;):</p>
-                            <ul class="list-disc list-inside text-sm text-slate-400 mt-2 space-y-1">
-                                <li><strong class="text-slate-200">Constant Returns to Scale (CRS):</strong> &alpha; + &beta; = 1. Output scales linearly with inputs.</li>
-                                <li><strong class="text-slate-200">Increasing Returns to Scale (IRS):</strong> &alpha; + &beta; &gt; 1. Output scales exponentially due to operational specializations.</li>
-                                <li><strong class="text-slate-200">Decreasing Returns to Scale (DRS):</strong> &alpha; + &beta; &lt; 1. Management complexities create fractional friction losses.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB CONTAINER: 3. GEOMETRIC EXPANSION -->
-                <div id="panel-expansion" class="space-y-6 hidden">
-                    <div class="border-b border-amber-500/20 pb-3 mb-4">
-                        <h2 class="text-amber-400 font-bold text-xl">📈 Core Mathematical Intersections & Long-Run Expansion Paths</h2>
-                    </div>
-                    <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-xl space-y-4">
-                        <h3 class="text-amber-400 font-semibold text-lg">🗺️ Long-Run Optimization & The Tangency Condition</h3>
-                        <p class="text-sm text-slate-300">Least-cost production balancing requires overlaying multi-variable Isoquants onto financial Isocost boundary tracks:</p>
-                        <ul class="list-disc list-inside text-sm text-slate-400 space-y-2 pl-2">
-                            <li><strong class="text-slate-200">Isocost Layout Layer:</strong> Tracks all configuration matrices mapping to identical operational expenditure budgets (<span class="text-blue-400">TC = wL + rK</span>). Slope matrix value equals factor price ratios (<span class="text-blue-400">-w/r</span>).</li>
-                            <li><strong class="text-slate-200">Equilibrium Optimization:</strong> Minimizing structural overhead dictates identifying the tangency sweet-spot where the isoquant vector trajectory slope matches factor valuation parameters exactly:</li>
-                        </ul>
-                        <div class="bg-slate-950 p-4 rounded-xl text-center font-mono text-xl text-emerald-400 my-4">
-                            MRTS<sub>L,K</sub> = MP<sub>L</sub> / MP<sub>K</sub> = w / r &rArr; (&alpha;K) / (&beta;L) = w / r
-                        </div>
-                        <p class="text-sm text-slate-300 mt-2">Connecting these progressive optimization coordinates dynamically forms the firm's true <strong class="text-amber-400">Long-Run Expansion Path</strong>, mapping ideal resource scaling pathways cleanly over time.</p>
-                    </div>
-                </div>
-
-                <!-- TAB CONTAINER: 4. QUIZ KNOWLEDGE CHECK -->
-                <div id="panel-quiz" class="space-y-6 hidden">
-                    <div class="border-b border-amber-500/20 pb-3 mb-4">
-                        <h2 class="text-amber-400 font-bold text-xl">📝 Master Long-Run Production Knowledge Evaluation Deck</h2>
-                    </div>
-                    <div class="bg-slate-900/40 custom-blur p-6 rounded-xl space-y-6">
-                        
-                        <!-- Question 1 -->
-                        <div class="space-y-2">
-                            <h3 class="font-medium text-slate-200">1. What condition mathematically characterizes the optimal, least-cost combinations of inputs along a firm's long-run expansion path?</h3>
-                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="A"> A) Marginal product of all variable assets drops to absolute zero.</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="B"> B) The MRTS is perfectly equal to the ratio of the factor input prices (w/r).</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q1" value="C"> C) Labor and capital inputs are utilized in an identical 1:1 hardware footprint ratio.</label>
-                            </div>
-                        </div>
-
-                        <!-- Question 2 -->
-                        <div class="space-y-2">
-                            <h3 class="font-medium text-slate-200">2. If a company doubles both its labor force and its capital assets, and total output increases by exactly 150%, how is this function categorized?</h3>
-                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="A"> A) Decreasing Returns to Scale (DRS)</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="B"> B) Constant Returns to Scale (CRS)</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q2" value="C"> C) Increasing Returns to Scale (IRS)</label>
-                            </div>
-                        </div>
-
-                        <!-- Question 3 -->
-                        <div class="space-y-2">
-                            <h3 class="font-medium text-slate-200">3. Which statement precisely describes a production isoquant line graph?</h3>
-                            <div class="grid grid-cols-1 gap-2 text-sm text-slate-300">
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="A"> A) All asset combinations that yield the exact same amount of absolute total cost outlays.</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="B"> B) The maximum combination of goods two corporate entities can trade.</label>
-                                <label class="flex items-center gap-3 bg-slate-950/60 p-3 rounded-lg cursor-pointer border border-slate-800 hover:border-slate-700"><input type="radio" name="q3" value="C"> C) All combinations of labor and capital inputs that generate the exact same quantity of total output.</label>
-                            </div>
-                        </div>
-
-                        <button onclick="evaluateQuizDeck()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-blue-500/10">Submit Performance Metrics</button>
-                        
-                        <!-- Quiz Review Output Window -->
-                        <div id="quiz-results" class="hidden space-y-3 pt-4 border-t border-slate-800">
-                            <h3 class="font-bold text-lg text-amber-400">🎉 Quiz Evaluation Score: <span id="quiz-score">0</span> / 50 Points</h3>
-                            <div id="q1-review" class="p-3 rounded-lg text-xs font-medium"></div>
-                            <div id="q2-review" class="p-3 rounded-lg text-xs font-medium"></div>
-                            <div id="q3-review" class="p-3 rounded-lg text-xs font-medium"></div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ===================================================================== -->
-        <!-- SYSTEM FOOTER DATA TERMINAL -->
-        <!-- ===================================================================== -->
-        <footer class="mt-12 pt-4 border-t border-slate-800 grid grid-cols-1 md:grid-cols-3 text-center md:text-left text-slate-500 text-xs gap-4 mb-4">
-            <div>🎓 Production Optimization Engine | Corporate Strategy Hub</div>
-            <div class="md:text-center">🚀 Fully Variable Asset Scale Optimization Active</div>
-            <div class="md:text-right">⏰ Terminal Sync Lock Date: <span id="footer-time">2026-07-14</span></div>
-        </footer>
-    </div>
-
-    <!-- Core Runtime Execution Scripts Engine -->
-    <script>
-        // System Global State Variables
-        let state = {
-            lr_efficiency: 0.0,
-            knowledge_rating: 0.0
-        };
-
-        // Secure Entry Gateway Check
-        function authenticateGateway() {
-            const passwordField = document.getElementById("security-key");
-            const errorMsg = document.getElementById("security-error");
+            optimal_k_l_ratio = (beta_val * w_price) / (alpha_val * r_price)
+            current_k_l_ratio = input_k / input_l
+            ratio_deviation = abs(current_k_l_ratio - optimal_k_l_ratio) / optimal_k_l_ratio
             
-            if (passwordField.value === "PED2026") {
-                document.getElementById("security-gateway").classList.add("hidden");
-                document.getElementById("main-application").classList.remove("hidden");
-                updateIndexUI();
+            rts_sum = alpha_val + beta_val
+            if abs(rts_sum - 1.0) < 0.01:
+                rts_status = "Constant Returns to Scale (CRS) ⚖️"
+            elif rts_sum > 1.0:
+                rts_status = "Increasing Returns to Scale (IRS) 🚀"
+            else:
+                rts_status = "Decreasing Returns to Scale (DRS) 📉"
                 
-                // Establish current workspace timestamp context
-                const now = new Date();
-                document.getElementById("footer-time").innerText = now.toISOString().slice(0, 19).replace('T', ' ');
-            } else {
-                errorMsg.classList.remove("hidden");
-                passwordField.value = "";
-            }
-        }
-
-        // Interface Variable Label Dynamic Binding Updates
-        function updateValues() {
-            const w = document.getElementById("val-w").value;
-            const r = document.getElementById("val-r").value;
-            const alpha = document.getElementById("val-alpha").value;
-            const beta = document.getElementById("val-beta").value;
-            const l = document.getElementById("val-l").value;
-            const k = document.getElementById("val-k").value;
-
-            document.getElementById("lbl-w").innerText = w;
-            document.getElementById("lbl-r").innerText = r;
-            document.getElementById("lbl-alpha").innerText = alpha;
-            document.getElementById("lbl-beta").innerText = beta;
-            document.getElementById("lbl-l").innerText = l;
-            document.getElementById("lbl-k").innerText = k;
-        }
-
-        // Tab Controller Layout Dispatcher
-        function switchTab(targetTab) {
-            const tabs = ['sandbox', 'theory', 'expansion', 'quiz'];
-            tabs.forEach(t => {
-                document.getElementById(`panel-${t}`).classList.add("hidden");
-                document.getElementById(`nav-${t}`).classList.remove("bg-blue-600", "text-white");
-                document.getElementById(`nav-${t}`).classList.add("hover:bg-slate-800");
-            });
-
-            document.getElementById(`panel-${targetTab}`).classList.remove("hidden");
-            document.getElementById(`nav-${targetTab}`).classList.add("bg-blue-600", "text-white");
-            document.getElementById(`nav-${targetTab}`).classList.remove("hover:bg-slate-800");
-        }
-
-        // Global Score Banner Logic Calculations Engine
-        function updateIndexUI() {
-            const combined = state.lr_efficiency + state.knowledge_rating;
-            document.getElementById("idx-opt").innerText = state.lr_efficiency.toFixed(1);
-            document.getElementById("idx-quiz").innerText = state.knowledge_rating.toFixed(1);
-            document.getElementById("idx-global").innerText = Math.max(0, Math.min(100, combined)).toFixed(1);
-        }
-
-        // Mathematical Calculator Simulator Core Engine Routine
-        function calculateLongRunMetrics() {
-            const w = parseFloat(document.getElementById("val-w").value);
-            const r = parseFloat(document.getElementById("val-r").value);
-            const alpha = parseFloat(document.getElementById("val-alpha").value);
-            const beta = parseFloat(document.getElementById("val-beta").value);
-            const L = parseFloat(document.getElementById("val-l").value);
-            const K = parseFloat(document.getElementById("val-k").value);
-
-            const techCoeff = 10.0;
-            const Q = techCoeff * Math.pow(L, alpha) * Math.pow(K, beta);
-            const TC = (w * L) + (r * K);
-            const unitCost = Q > 0 ? (TC / Q) : 0.0;
-
-            const optimalKL = (beta * w) / (alpha * r);
-            const currentKL = K / L;
-            const ratioDeviation = Math.abs(currentKL - optimalKL) / optimalKL;
-
-            // Compute structural Returns to Scale profile
-            const rtsSum = alpha + beta;
-            let rtsStatus = "";
-            if (Math.abs(rtsSum - 1.0) < 0.01) rtsStatus = "Constant Returns to Scale (CRS) ⚖️";
-            else if (rtsSum > 1.0) rtsStatus = "Increasing Returns to Scale (IRS) 🚀";
-            else rtsStatus = "Decreasing Returns to Scale (DRS) 📉";
-
-            // Grade operational matrix configurations layout metrics
-            let points = 0.0;
-            let efficiencyStatus = "";
-            const statusBox = document.getElementById("res-status-title");
-
-            if (ratioDeviation <= 0.05) {
-                efficiencyStatus = "Optimal Input Mix: Perfect Alignment Chosen 🌟";
-                points = 50.0;
-            } else if (ratioDeviation <= 0.25) {
-                efficiencyStatus = "Suboptimal Mix: Minor Resource Friction Detected ⚠️";
-                points = 35.0;
-            } else {
-                efficiencyStatus = "Inefficient Mix: Major Resource Imbalance 🚨";
-                points = 15.0;
-            }
-
-            state.lr_efficiency = points;
-            updateIndexUI();
-
-            // Bind values dynamically out to visible layout display blocks
-            document.getElementById("res-q").innerText = Q.toFixed(1) + " Units";
-            document.getElementById("res-tc").innerText = "$" + TC.toFixed(2);
-            document.getElementById("res-ac").innerText = "$" + unitCost.toFixed(2);
-            document.getElementById("res-rts").innerText = rtsStatus;
+            if ratio_deviation <= 0.05:
+                efficiency_status = "Optimal Input Mix: Perfect Alignment Chosen 🌟"
+                points = 50.0
+            elif ratio_deviation <= 0.25:
+                efficiency_status = "Suboptimal Mix: Minor Resource Friction Detected ⚠️"
+                points = 35.0
+            else:
+                efficiency_status = "Inefficient Mix: Major Resource Imbalance 🚨"
+                points = 15.0
+                
+            st.session_state.lr_round_counter += 1
+            st.session_state.lr_efficiency = min(50.0, points)
             
-            statusBox.innerText = "Allocation Diagnosis: " + efficiencyStatus;
-            document.getElementById("res-opt-ratio").innerText = optimalKL.toFixed(3);
-            document.getElementById("res-curr-ratio").innerText = currentKL.toFixed(3);
+            st.session_state.lr_history.append({
+                'run': st.session_state.lr_round_counter, 'L': input_l, 'K': input_k, 'Q': q_output,
+                'cost': total_cost, 'unit_cost': unit_cost, 'rts': rts_status, 'efficiency': efficiency_status,
+                'opt_ratio': optimal_k_l_ratio, 'curr_ratio': current_k_l_ratio
+            })
+            st.session_state.lr_calculated = True
+            st.rerun()
 
-            document.getElementById("sandbox-results").classList.remove("hidden");
-        }
-
-        // Quiz Metrics Processing Evaluator System Engine
-        function evaluateQuizDeck() {
-            let score = 0;
+    if st.session_state.lr_calculated:
+        lr_metrics_block = st.container()
+        with lr_metrics_block:
+            st.markdown('<div class="section-header">📊 Dynamic Macro-Factory Performance Tracking</div>', unsafe_allow_html=True)
+            latest_lr = st.session_state.lr_history[-1]
+            c1, c2, c3, c4 = st.columns(4)
             
-            const q1 = document.querySelector('input[name="q1"]:checked');
-            const q2 = document.querySelector('input[name="q2"]:checked');
-            const q3 = document.querySelector('input[name="q3"]:checked');
+            with c1:
+                st.markdown(f'<div class="metric-card"><h3>Total Output ($Q$)</h3><div class="metric-value">{latest_lr["Q"]} Units</div><p style="color: #64748B; font-size: 0.85rem;">Cobb-Douglas Production</p></div>', unsafe_allow_html=True)
+            with c2:
+                st.markdown(f'<div class="metric-card"><h3>Total Cost ($TC$)</h3><div class="metric-value">${latest_lr["cost"]}</div><p style="color: #64748B; font-size: 0.85rem;">$wL + rK$ Outlay</p></div>', unsafe_allow_html=True)
+            with c3:
+                st.markdown(f'<div class="metric-card"><h3>Average Unit Cost</h3><div class="metric-value">${latest_lr["unit_cost"]}</div><p style="color: #64748B; font-size: 0.85rem;">Economic Cost Per Unit</p></div>', unsafe_allow_html=True)
+            with c4:
+                st.markdown(f'<div class="metric-card"><h3>Returns Matrix</h3><div class="metric-value" style="font-size: 1.15rem; padding-top: 0.4rem;">{latest_lr["rts"]}</div></div>', unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class="concept-note" style="border-left-color: #FBBF24;">
+                <h4>Allocation Diagnosis: {latest_lr['efficiency']}</h4>
+                <p>Target Cost-Minimizing Ratio ($K/L$): <strong>{round(latest_lr['opt_ratio'], 3)}</strong> | Current Deployed Ratio ($K/L$): <strong>{round(latest_lr['curr_ratio'], 3)}</strong></p>
+                <small>To lower unit costs to the absolute structural floor, alter inputs until your engineered ratio perfectly hits the target allocation threshold.</small>
+            </div>
+            """, unsafe_allow_html=True)
 
-            const q1Box = document.getElementById("q1-review");
-            const q2Box = document.getElementById("q2-review");
-            const q3Box = document.getElementById("q3-review");
+# --- SECTION 2: CORE THEORY DEEP DIVE ---
+elif nav_selection == "📖 Core Production Theory":
+    st.markdown('<div class="section-header">📚 Structural Mechanics of Long-Run Microeconomic Production</div>', unsafe_allow_html=True)
+    theory_tabs = st.tabs(["Long-Run Variably Scaled Foundations", "Returns to Scale (RTS) Dynamics"])
+    
+    with theory_tabs[0]:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>🚀 Long-Run Production Functions & Isoquants</h3>
+        <p>In analytical economics, the <strong>Long Run</strong> is defined as an optimization horizon where <strong>all factors of production are fully variable</strong>. Firms can switch asset sizes, construct new plants, or reshape total operational layouts simultaneously.</p>
+        <p><strong>The Isoquant Map:</strong> An isoquant is a contour curve representing all distinct combinations of labor ($L$) and capital ($K$) that yield the <strong>exact same level of absolute total output</strong> ($Q$). Higher curves symbolize larger output capacity volumes.</p>
+        <p><strong>Marginal Rate of Technical Substitution ($MRTS$):</strong> Measures the exact rate at which a firm can substitute capital for labor while maintaining a static output volume. It reflects the negative slope of the isoquant curve:</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.latex(r"MRTS_{L,K} = -\frac{\Delta K}{\Delta L} = \frac{MP_L}{MP_K}")
 
-            // Evaluate Question 1
-            if (q1 && q1.value === "B") {
-                score += 16.66;
-                q1Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                q1Box.innerText = "✓ Q1 Correct: MRTS = w/r establishes absolute long-run structural cost minimization parameters.";
-            } else {
-                q1Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
-                q1Box.innerText = "✗ Q1 Review Needed: Long-run optimization dictates technical trading balance ratios (MRTS) match exact asset price variables (w/r).";
-            }
+    with theory_tabs[1]:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>⚖️ Returns to Scale Parameter Tracking</h3>
+        <p>Returns to Scale evaluates how total output behaves when <strong>all production inputs are increased by the exact same proportional factor</strong> ($\lambda$).</p>
+        <p>Using a homogeneous Cobb-Douglas function ($Q = A L^\alpha K^\beta$), scaling inputs by $\lambda$ results in: $Q(\lambda L, \lambda K) = \lambda^{\alpha + \beta} Q$.</p>
+        <ul>
+            <li><strong>Constant Returns to Scale (CRS):</strong> $\alpha + \beta = 1$. Doubling inputs perfectly doubles output yield.</li>
+            <li><strong>Increasing Returns to Scale (IRS):</strong> $\alpha + \beta > 1$. Doubling inputs more than doubles total output (driven by structural specialization or specialization advantages).</li>
+            <li><strong>Decreasing Returns to Scale (DRS):</strong> $\alpha + \beta < 1$. Doubling inputs leads to a less-than-proportional increase in total output (often caused by administrative complexity or management fragmentation).</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
-            // Evaluate Question 2
-            if (q2 && q2.value === "C") {
-                score += 16.67;
-                q2Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                q2Box.innerText = "✓ Q2 Correct: Proportional resource updates yielding hyper-proportional capacity growth defines IRS thresholds.";
-            } else {
-                q2Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
-                q2Box.innerText = "✗ Q2 Review Needed: Scaling resource footprints 2x resulting in 2.5x total product expansion indicates Increasing Returns to Scale parameters.";
-            }
+# --- SECTION 3: COST ECONOMICS & FINANCIAL TAXONOMY ---
+elif nav_selection == "📊 Cost Economics & Financial Taxonomy":
+    st.markdown('<div class="section-header">📊 Integrated Microeconomic Cost Analysis & Taxonomy</div>', unsafe_allow_html=True)
+    
+    cost_tab1, cost_tab2, cost_tab3, cost_tab4 = st.tabs([
+        "💰 Accounting vs. Economic Cost",
+        "🛑 Opportunity & Sunk Costs",
+        "📉 Short-Run Cost Structure (FC, VC, TC)",
+        "📐 Unit & Marginal Costs (AC, AFC, AVC, MC)"
+    ])
 
-            // Evaluate Question 3
-            if (q3 && q3.value === "C") {
-                score += 16.67;
-                q3Box.className = "p-3 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                q3Box.innerText = "✓ Q3 Correct: Isoquants strictly chart configuration sets hitting identical absolute performance metrics.";
-            } else {
-                q3Box.className = "p-3 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20";
-                q3Box.innerText = "✗ Q3 Review Needed: Isoquant maps trace equivalent capacity outputs (iso = equal; quant = quantity), differing fundamentally from cost profiles.";
-            }
+    with cost_tab1:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>Accounting Cost vs. Economic Cost</h3>
+        <p>Strategic decision-making requires distinguishing between conventional accounting expenditures and true economic cost.</p>
+        <ul>
+            <li><strong>Explicit Cost (Accounting Cost):</strong> Direct, out-of-pocket monetary expenses recorded in financial ledgers (e.g., wages, raw materials, rent, utilities).</li>
+            <li><strong>Implicit Cost:</strong> The non-monetary opportunity costs of using self-owned resources (e.g., foregone salary of the owner, foregone rent on owned land, foregone interest on invested equity capital).</li>
+            <li><strong>Economic Cost Equation:</strong></li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        st.latex(r"\text{Economic Cost} = \text{Explicit Costs} + \text{Implicit Costs}")
+        
+        st.markdown("""
+        <div class="case-study">
+        <h4>💡 Profitability Metrics Comparison</h4>
+        <p><strong>Accounting Profit</strong> = Total Revenue - Explicit Costs</p>
+        <p><strong>Economic Profit</strong> = Total Revenue - (Explicit Costs + Implicit Costs) = Total Revenue - Economic Cost</p>
+        <p><em>Note: If Economic Profit = 0, the firm earns a <strong>Normal Profit</strong>, covering all explicit and implicit opportunity costs.</em></p>
+        </div>
+        """, unsafe_allow_html=True)
 
-            state.knowledge_rating = score;
-            updateIndexUI();
+    with cost_tab2:
+        col_opp, col_sunk = st.columns(2)
+        
+        with col_opp:
+            st.markdown("""
+            <div class="concept-note">
+            <h3>💡 Opportunity Cost</h3>
+            <p>The value of the <strong>next best alternative forgone</strong> when making a decision.</p>
+            <p>Every resource deployment choice carries an opportunity cost. In cost minimization, if capital is deployed into machinery, its opportunity cost is the return it would have generated in its next best alternative investment.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with col_sunk:
+            st.markdown("""
+            <div class="case-study">
+            <h3>🛑 Sunk Cost</h3>
+            <p>An expense that has <strong>already been incurred and cannot be recovered</strong> by any future decision.</p>
+            <p><strong>The Golden Rule of Sunk Costs:</strong> Sunk costs are <em>irrelevant</em> for forward-looking economic decisions. Rational firms ignore sunk costs when evaluating marginal production steps.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-            document.getElementById("quiz-score").innerText = Math.round(score);
-            document.getElementById("quiz-results").classList.remove("hidden");
-        }
-    </script>
-</body>
-</html>
+    with cost_tab3:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>Short-Run Production Cost Components</h3>
+        <p>In the short run, at least one factor of production (usually Capital $K$) is fixed.</p>
+        <ul>
+            <li><strong>Total Fixed Cost (TFC):</strong> Expenses that do not vary with output volume ($Q$). They must be paid even if output is zero (e.g., factory lease, administrative salaries).</li>
+            <li><strong>Total Variable Cost (TVC):</strong> Expenses that vary directly with output volume ($Q$) (e.g., raw materials, direct hourly labor).</li>
+            <li><strong>Total Cost (TC) Identity:</strong></li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        st.latex(r"TC(Q) = TFC + TVC(Q)")
+
+    with cost_tab4:
+        st.markdown("""
+        <div class="concept-note">
+        <h3>Per-Unit and Marginal Cost Dynamics</h3>
+        <p>Dividing total metrics by volume ($Q$) yields per-unit cost curves, which govern competitive pricing and profit-maximization behavior.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.latex(r"ATC = \frac{TC}{Q} = \frac{TFC + TVC}{Q} = AFC + AVC")
+        st.latex(r"MC = \frac{\Delta TC}{\Delta Q} = \frac{\partial TC}{\partial Q}")
+        
+        st.markdown("""
+        <div class="case-study">
+        <h4>📌 Critical Curve Relationships</h4>
+        <ul>
+            <li><strong>Average Fixed Cost ($AFC$):</strong> Continuously declines as output scales (known as <em>"spreading the overhead"</em>).</li>
+            <li><strong>Marginal Cost ($MC$) and Average Cost ($ATC$/$AVC$):</strong>
+                <ul>
+                    <li>When $MC < ATC$, Average Total Cost is falling.</li>
+                    <li>When $MC > ATC$, Average Total Cost is rising.</li>
+                    <li>$MC$ intersects $ATC$ and $AVC$ at their absolute <strong>minimum points</strong>.</li>
+                </ul>
+            </li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+# --- SECTION 4: GEOMETRIC EXPANSION PATHS ---
+elif nav_selection == "📈 Geometric Expansion Paths":
+    st.markdown('<div class="section-header">📈 Core Mathematical Intersections & Long-Run Expansion Paths</div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="case-study">
+    <h4>🗺️ Long-Run Optimization & The Expansion Path Frontier</h4>
+    <p>In long-run optimization geometry, structural efficiency is modeled by overlaying <strong>Isoquants</strong> with <strong>Isocost Lines</strong>:</p>
+    <ul>
+        <li><strong>Isocost Line Equation:</strong> Represents all asset combinations costing an identical total financial capital outlay ($TC = wL + rK$). The slope equals the relative economic price ratio: $-w/r$.</li>
+        <li><strong>Tangency Optimization Equilibrium:</strong> The least-cost combination to achieve a target output level occurs at the precise graphic location where an isoquant curve is perfectly tangent to the lowest achievable isocost line. At this point:</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    st.latex(r"MRTS_{L,K} = \frac{MP_L}{MP_K} = \frac{w}{r}")
+    st.markdown("""
+    <div class="case-study">
+    <p><strong>The Expansion Path:</strong> Connecting all consecutive tangency equilibrium points as production scales creates the firm's <strong>Long-Run Expansion Path</strong>. This line traces the most financially rational path for structural asset configuration as a company scales.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- SECTION 5: KNOWLEDGE CHECK ---
+elif nav_selection == "📝 Operational Knowledge Check":
+    st.markdown('<div class="section-header">📝 Master Long-Run Production & Cost Knowledge Evaluation Deck</div>', unsafe_allow_html=True)
+    st.markdown("Test your integrated understanding of production scaling and economic cost architecture.")
+    
+    with st.form("integrated_production_quiz"):
+        st.markdown("### 1. Long-Run Cost Minimization Parameter Alignment")
+        q1 = st.radio(
+            "What condition mathematically characterizes the optimal, least-cost combinations of inputs along a firm's long-run expansion path?",
+            options=[
+                "A) Marginal product of all variable assets drops to absolute zero.",
+                "B) The MRTS is perfectly equal to the ratio of the factor input prices (w/r).",
+                "C) Labor and capital inputs are utilized in an identical 1:1 hardware footprint ratio.",
+                "D) Total fixed outlays perfectly equal total variable outlays."
+            ], index=None
+        )
+        
+        st.markdown("---")
+        st.markdown("### 2. Decoding Returns to Scale Functionality")
+        q2 = st.radio(
+            "If a company doubles both its labor force and its capital assets, and total output increases by exactly 150%, how is this function categorized?",
+            options=[
+                "A) Decreasing Returns to Scale (DRS)",
+                "B) Constant Returns to Scale (CRS)",
+                "C) Increasing Returns to Scale (IRS)",
+                "D) Conflicted Diminishing Returns Architecture"
+            ], index=None
+        )
+        
+        st.markdown("---")
+        st.markdown("### 3. Economic Profit vs. Accounting Profit")
+        q3 = st.radio(
+            "An entrepreneur leaves a $100,000/year job to start a firm. Revenues are $300,000 and explicit costs are $180,000. What is the Economic Profit?",
+            options=[
+                "A) $120,000",
+                "B) $20,000",
+                "C) $300,000",
+                "D) -$80,000"
+            ], index=None
+        )
+        
+        st.markdown("---")
+        st.markdown("### 4. Sunk Cost & Decision Theory")
+        q4 = st.radio(
+            "A company spent $5M developing a prototype that turns out to be non-viable. To complete it will cost $1M more, but projected revenue is only $500,000. Should they proceed?",
+            options=[
+                "A) Yes, to recover part of the initial $5M investment.",
+                "B) No, because incremental revenue ($500k) is less than incremental cost ($1M); the $5M is a sunk cost.",
+                "C) Yes, because total revenue exceeds the remaining variable cost.",
+                "D) No, because fixed costs must always be amortized fully."
+            ], index=None
+        )
+        
+        eval_quiz = st.form_submit_button("Submit Performance Metrics", type="primary")
+        
+        if eval_quiz:
+            score_acc = 0.0
+            
+            if q1 == "B) The MRTS is perfectly equal to the ratio of the factor input prices (w/r).":
+                score_acc += 12.5; st.session_state.ans1_ok = True
+            else: st.session_state.ans1_ok = False
+                
+            if q2 == "C) Increasing Returns to Scale (IRS)":
+                score_acc += 12.5; st.session_state.ans2_ok = True
+            else: st.session_state.ans2_ok = False
+                
+            if q3 == "B) $20,000":
+                score_acc += 12.5; st.session_state.ans3_ok = True
+            else: st.session_state.ans3_ok = False
+
+            if q4 == "B) No, because incremental revenue ($500k) is less than incremental cost ($1M); the $5M is a sunk cost.":
+                score_acc += 12.5; st.session_state.ans4_ok = True
+            else: st.session_state.ans4_ok = False
+                
+            st.session_state.knowledge_rating = score_acc
+            st.session_state.quiz_done = True
+            st.rerun()
+
+    if st.session_state.quiz_done:
+        st.markdown("---")
+        st.markdown(f"### 🎉 Quiz Performance Score: {round(st.session_state.knowledge_rating, 1)} / 50 Points")
+        
+        if not st.session_state.ans1_ok:
+            st.error("**Q1 Analysis:** Cost minimization dictates that the rate at which you can technically trade inputs ($MRTS$) must align with the market rate for buying them ($w/r$).")
+        if not st.session_state.ans2_ok:
+            st.error("**Q2 Analysis:** Scaling inputs by 2x (100% increase) yielding a 2.5x (150% increase) output shift indicates Increasing Returns to Scale ($\alpha + \beta > 1$).")
+        if not st.session_state.ans3_ok:
+            st.error("**Q3 Analysis:** Accounting Profit = $300k - $180k = $120k. Subtract the $100k foregone salary (implicit cost) to get Economic Profit = $20,000.")
+        if not st.session_state.ans4_ok:
+            st.error("**Q4 Analysis:** The $5M spent is a sunk cost and unrecoverable. Marginal cost to finish ($1M) exceeds marginal revenue ($500k), so continuing loses another $500k.")
+
+# =====================================================================
+# SYSTEM FOOTER DATA TERMINAL
+# =====================================================================
+st.markdown("---")
+foot_c1, foot_c2, foot_c3 = st.columns(3)
+
+with foot_c1:
+    st.caption("🎓 Production & Cost Optimization Engine | Corporate Strategy Hub")
+
+with foot_c2:
+    st.caption("🚀 Fully Variable Asset Scale Optimization Active")
+
+with foot_c3:
+    st.caption(f"⏰ Engine System Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
