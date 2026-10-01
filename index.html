@@ -1,428 +1,654 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inflation & Employment Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-# =====================================================================
-# PAGE CONFIGURATION
-# =====================================================================
-st.set_page_config(
-    page_title="Microeconomic Cost Engine",
-    page_icon="💰",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
-# =====================================================================
-# SECURE ACCESS SYSTEM
-# =====================================================================
-def check_password():
-    """Returns `True` if the user enters the correct security key."""
-    def password_entered():
-        if st.session_state["password"] == "PED2026":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  
-        else:
-            st.session_state["password_correct"] = False
+    body {
+      background: radial-gradient(circle at 15% 15%, #0B192C 0%, #06101E 60%, #020617 100%);
+      color: #E2E8F0;
+      min-height: 100vh;
+      display: flex;
+    }
 
-    if "password_correct" not in st.session_state:
-        st.markdown("<h1 style='text-align: center; color: #3B82F6;'>🔒 Cost Engine Security</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center;'>Enter credential key to deploy the Cost Optimization Engine.</p>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 1.5, 1])
-        with col2:
-            st.text_input("Security Password", type="password", on_change=password_entered, key="password")
-        return False
-    
-    elif not st.session_state["password_correct"]:
-        st.markdown("<h1 style='text-align: center; color: #3B82F6;'>🔒 Cost Engine Security</h1>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 1.5, 1])
-        with col2:
-            st.text_input("Security Password", type="password", on_change=password_entered, key="password")
-            st.error("😕 Access denied. Invalid token key.")
-        return False
-    
-    return True
+    /* Sidebar Layout */
+    .sidebar {
+      width: 320px;
+      background: rgba(15, 23, 42, 0.85);
+      border-right: 1px solid rgba(56, 189, 248, 0.15);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex-shrink: 0;
+    }
 
-if not check_password():
-    st.stop()
+    .main-content {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      overflow-y: auto;
+    }
 
-# =====================================================================
-# CORE DESIGN SYSTEM (SLATE, COBALT & AMBER METROPOLIS THEME)
-# =====================================================================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    
-    * { font-family: 'Plus Jakarta Sans', sans-serif; }
-    
-    /* Main Background & Core Canvas Layout */
-    .stApp { background: linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%); }
-    
-    /* Dynamic Performance Score Indicator */
+    /* Nav Buttons */
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #CBD5E1;
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn.active, .nav-btn:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(14, 165, 233, 0.2) 100%);
+      border-color: #34D399;
+      color: #FFFFFF;
+    }
+
+    /* Cards & Banners */
     .score-banner {
-        background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        color: #FFFFFF; padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 2rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: center;
     }
-    .score-banner h2 { color: #60A5FA !important; margin: 0 !important; font-weight: 700; font-size: 1.6rem; }
-    
-    /* System Division Headers */
-    .section-header {
-        color: #FBBF24; font-weight: 700; font-size: 1.4rem; margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem; border-bottom: 1px solid rgba(251, 191, 36, 0.2);
-    }
-    
-    /* Concept Info Cards & Box Systems */
-    .concept-note, .case-study { padding: 1.25rem; border-radius: 8px; margin: 1.2rem 0; }
-    .concept-note { background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3B82F6; }
-    .concept-note h3 { color: #60A5FA; margin-top: 0 !important; font-size: 1.2rem; }
-    .case-study { background: rgba(217, 119, 6, 0.08); border-left: 4px solid #D97706; }
-    .case-study h4 { color: #F59E0B; margin-top: 0 !important; font-size: 1.2rem; }
-    
-    /* Dynamic Metric Highlight Blocks */
-    .metric-card {
-        background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 1.25rem; border-radius: 8px; text-align: center;
-    }
-    .metric-card h3 { color: #94A3B8; font-size: 1.05rem; margin: 0 0 0.5rem 0; }
-    .metric-value { color: #FBBF24; font-size: 1.8rem; font-weight: 700; margin: 0.25rem 0; }
-    
-    /* Interface Control Elements / Buttons */
-    .stButton > button, .stFormSubmitButton > button {
-        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important; color: white !important;
-        border: none !important; padding: 0.65rem 1.75rem !important; border-radius: 6px !important;
-        font-weight: 600 !important; transition: all 0.2s ease !important;
-    }
-    .stButton > button:hover, .stFormSubmitButton > button:hover { 
-        transform: translateY(-1px) !important; 
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important; 
-    }
-    
-    /* Framework Global Text Elements Adjustments */
-    .stMarkdown, p, li { color: #E2E8F0 !important; font-size: 0.98rem; line-height: 1.6; }
-    .stSidebar { background: #0F172A !important; border-right: 1px solid rgba(255, 255, 255, 0.05); }
-</style>
-""", unsafe_allow_html=True)
 
-# =====================================================================
-# SESSION STATE SYSTEM MANAGEMENT
-# =====================================================================
-def init_system_state():
-    defaults = {
-        'knowledge_rating': 0.0,
-        'quiz_done': False,
-        'ans1_ok': False, 'ans2_ok': False, 'ans3_ok': False
+    .score-banner h2 {
+      color: #34D399;
+      font-size: 1.5rem;
+      font-weight: 700;
     }
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
 
-init_system_state()
+    .score-banner p {
+      color: #94A3B8;
+      font-size: 0.95rem;
+      margin-top: 0.3rem;
+    }
 
-# =====================================================================
-# SIDEBAR CONTROL DECK
-# =====================================================================
-with st.sidebar:
-    st.markdown("### 💰 Cost Economics Hub")
-    nav_selection = st.radio(
-        "Navigation Deck:",
-        options=[
-            "📐 Cost Curves Simulator",
-            "📊 Explicit vs. Implicit Costs & Profit",
-            "💡 Opportunity & Sunk Costs Evaluator",
-            "📖 Comprehensive Cost Taxonomy",
-            "📝 Cost Architecture Knowledge Check"
-        ]
-    )
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 2rem;
+    }
 
-# =====================================================================
-# LIVE SCORE TRACKING ENGINE
-# =====================================================================
-score_container = st.container()
-with score_container:
-    final_score = round(st.session_state.knowledge_rating, 1)
-    
-    st.markdown(f"""
-    <div class="score-banner">
-        <h2>Cost Economics Mastery Score: {final_score} / 100</h2>
-        <p style='color: #FBBF24; margin: 0.25rem 0 0 0;'>
-            📝 Quiz Accuracy Rating: {final_score}/100
-        </p>
-        <small style='color: #94A3B8;'>Evaluate cost dynamics, avoid sunk cost fallacies, and optimize profit margins.</small>
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-panel {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .metric-title {
+      color: #94A3B8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-top: 0.35rem;
+    }
+
+    /* Form Controls */
+    .slider-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .slider-desc {
+      font-size: 0.75rem;
+      color: #94A3B8;
+      margin-top: 0.2rem;
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: #10B981;
+      cursor: pointer;
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.6rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+
+    /* Feedback Callouts */
+    .alert-box {
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10B981;
+      color: #A7F3D0;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid #F59E0B;
+      color: #FDE68A;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #EF4444;
+      color: #FCA5A5;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Quiz Styling */
+    .quiz-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quiz-question {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #F8FAFC;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.9rem;
+      color: #CBD5E1;
+      margin-bottom: 0.65rem;
+      cursor: pointer;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 3rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      padding-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      color: #64748B;
+      font-size: 0.8rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid rgba(148, 163, 184, 0.15);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <h2 style="font-size: 1.25rem; color: #F8FAFC;">🇮🇳 Macro Portal</h2>
+      <p style="color: #64748B; font-size: 0.8rem; margin-top: 0.2rem;">Policy Simulation & Evaluation</p>
     </div>
-    """, unsafe_allow_html=True)
 
-# =====================================================================
-# INTERACTIVE ROUTING ARCHITECTURE
-# =====================================================================
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <button class="nav-btn active" id="nav-sim" onclick="switchTab('sim')">
+        📈 Step 1: Phillips Curve Sim (50 Pts)
+      </button>
+      <button class="nav-btn" id="nav-quiz" onclick="switchTab('quiz')">
+        📝 Step 2: Knowledge Assessment (50 Pts)
+      </button>
+    </div>
 
-# --- SECTION 1: COST CURVES SIMULATOR ---
-if nav_selection == "📐 Cost Curves Simulator":
-    st.markdown('<div class="section-header">📐 Short-Run & Long-Run Cost Curves Simulator</div>', unsafe_allow_html=True)
-    
-    col_ctrl, col_plot = st.columns([1, 1.6])
-    
-    with col_ctrl:
-        st.markdown(r'<div class="concept-note"><h3>⚙️ Cost Function Controls</h3><p>Model total short-run cost:<br>$$TC(Q) = TFC + a \cdot Q + b \cdot Q^2 + c \cdot Q^3$$</p></div>', unsafe_allow_html=True)
-        
-        tfc = st.number_input("Total Fixed Cost ($TFC$):", min_value=10.0, max_value=500.0, value=100.0, step=10.0)
-        param_a = st.slider("Linear Cost Coeff ($a$):", 1.0, 50.0, 20.0, step=1.0)
-        param_b = st.slider("Quadratic Coeff ($b$ - Diminishing Returns):", -5.0, 5.0, -1.5, step=0.1)
-        param_c = st.slider("Cubic Coeff ($c$ - Capacity Constraints):", 0.01, 0.5, 0.05, step=0.01)
-        q_max = st.slider("Maximum Output Volume ($Q$):", 10, 100, 40, step=5)
+    <hr />
 
-    # Compute Curves
-    q_vals = np.linspace(1, q_max, 200)
-    tvc_vals = param_a * q_vals + param_b * (q_vals**2) + param_c * (q_vals**3)
-    tc_vals = tfc + tvc_vals
-    
-    afc_vals = tfc / q_vals
-    avc_vals = tvc_vals / q_vals
-    atc_vals = tc_vals / q_vals
-    mc_vals = param_a + 2 * param_b * q_vals + 3 * param_c * (q_vals**2)
+    <div>
+      <h3 style="font-size: 0.95rem; color: #94A3B8; text-transform: uppercase;">🏆 Combined Scoreboard</h3>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem;">Simulation Lab: <b id="side-sim-score">0</b> / 50</p>
+      <p style="font-size: 0.9rem; margin-top: 0.25rem;">MCQ Assessment: <b id="side-quiz-score">0</b> / 50</p>
+      <h4 style="margin-top: 0.75rem; color: #38BDF8;">Total Mastery: <span id="side-total-score">0</span> / 100</h4>
+      <div id="side-perfect" style="display: none; margin-top: 0.75rem;" class="alert-box alert-success">
+        🌟 Perfect Macroeconomic Score!
+      </div>
+    </div>
+  </aside>
 
-    with col_plot:
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 8))
-        fig.patch.set_facecolor('#0F172A')
-        for ax in [ax1, ax2]:
-            ax.set_facecolor('#1E293B')
-            ax.tick_params(colors='white')
-            ax.xaxis.label.set_color('white')
-            ax.yaxis.label.set_color('white')
-            ax.grid(True, linestyle='--', alpha=0.3)
+  <!-- Main View -->
+  <main class="main-content">
+    <div class="score-banner">
+      <h2>Aggregate Macro Performance: <span id="banner-total">0</span> / 100</h2>
+      <p>
+        Simulation Lab: <b><span id="banner-sim">0</span>/50 Pts</b> | 
+        Conceptual MCQs: <b><span id="banner-quiz">0</span>/50 Pts</b>
+      </p>
+    </div>
 
-        # Plot Totals
-        ax1.plot(q_vals, tc_vals, label='Total Cost (TC)', color='#3B82F6', linewidth=2.5)
-        ax1.plot(q_vals, tvc_vals, label='Total Variable Cost (TVC)', color='#F59E0B', linewidth=2)
-        ax1.axhline(y=tfc, label='Total Fixed Cost (TFC)', color='#EF4444', linestyle=':', linewidth=2)
-        ax1.set_title(r'Total Cost Curves ($TC = TFC + TVC$)', color='white', fontsize=12)
-        ax1.set_ylabel('Total Cost ($)')
-        ax1.legend(loc='upper left')
+    <!-- MODULE 1: SIMULATION -->
+    <section id="module-sim">
+      <h3 style="font-size: 1.4rem; margin-bottom: 0.3rem;">📈 Phillips Curve & Unemployment Trade-off Simulator</h3>
+      <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Explore the short-run trade-off between inflation and unemployment in India under demand-pull aggregate fiscal stimulus, supply-side shocks (oil/food prices), and RBI's inflation-targeting mandate.
+      </p>
 
-        # Plot Averages & Marginal
-        ax2.plot(q_vals, atc_vals, label='Average Total Cost (ATC)', color='#60A5FA', linewidth=2)
-        ax2.plot(q_vals, avc_vals, label='Average Variable Cost (AVC)', color='#FBBF24', linewidth=2)
-        ax2.plot(q_vals, afc_vals, label='Average Fixed Cost (AFC)', color='#94A3B8', linestyle='--', linewidth=1.5)
-        ax2.plot(q_vals, mc_vals, label='Marginal Cost (MC)', color='#10B981', linewidth=2.5)
-        ax2.set_title(r'Per-Unit & Marginal Cost Curves ($MC = \frac{dTC}{dQ}$)', color='white', fontsize=12)
-        ax2.set_xlabel('Output Quantity (Q)')
-        ax2.set_ylabel('Cost Per Unit ($)')
-        ax2.set_ylim(0, float(np.percentile(atc_vals, 95)) * 2)
-        ax2.legend(loc='upper right')
+      <div class="grid-2">
+        <!-- Levers -->
+        <div>
+          <h4 style="margin-bottom: 1rem; color: #38BDF8;">🛠️ Macro Policy Levers</h4>
 
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>1. Aggregate Demand Stimulus:</span>
+              <span id="ad-val" style="color: #38BDF8;">+0.0%</span>
+            </div>
+            <input type="range" id="ad-slider" min="-3.0" max="4.0" step="0.5" value="0.0" oninput="updateSim()" />
+            <div class="slider-desc">Fiscal capital expansion and credit growth that boosts short-term hiring.</div>
+          </div>
 
-# --- SECTION 2: EXPLICIT VS IMPLICIT COSTS ---
-elif nav_selection == "📊 Explicit vs. Implicit Costs & Profit":
-    st.markdown('<div class="section-header">📊 Accounting Profit vs. Economic Profit Engine</div>', unsafe_allow_html=True)
-    
-    col_in, col_res = st.columns([1, 1])
-    
-    with col_in:
-        st.markdown('<div class="case-study"><h4>📋 Business Financial Outlays</h4></div>', unsafe_allow_html=True)
-        total_rev = st.number_input("Total Revenue ($TR$):", min_value=0.0, value=500000.0, step=10000.0)
-        
-        st.markdown("##### 💵 Explicit Costs (Out-of-Pocket Ledger Expenses)")
-        wages = st.number_input("Wages & Payroll:", min_value=0.0, value=180000.0, step=5000.0)
-        materials = st.number_input("Raw Materials & Operating Outlays:", min_value=0.0, value=70000.0, step=5000.0)
-        rent_overhead = st.number_input("Rent & Facilities Overhead:", min_value=0.0, value=50000.0, step=2000.0)
-        
-        st.markdown("##### 🧠 Implicit Costs (Opportunity Costs)")
-        foregone_salary = st.number_input("Owner's Foregone Salary:", min_value=0.0, value=90000.0, step=5000.0)
-        foregone_rent = st.number_input("Foregone Rent on Self-Owned Real Estate:", min_value=0.0, value=25000.0, step=2000.0)
-        foregone_interest = st.number_input("Foregone Interest on Equity Capital:", min_value=0.0, value=15000.0, step=1000.0)
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>2. Supply Shock Index (Food/Crude):</span>
+              <span id="shock-val" style="color: #38BDF8;">0.0%</span>
+            </div>
+            <input type="range" id="shock-slider" min="-2.0" max="4.0" step="0.5" value="0.0" oninput="updateSim()" />
+            <div class="slider-desc">Imported inflation and monsoon disruptions that shift the curve outward.</div>
+          </div>
 
-    # Computations
-    total_explicit = wages + materials + rent_overhead
-    total_implicit = foregone_salary + foregone_rent + foregone_interest
-    economic_cost = total_explicit + total_implicit
-    
-    acct_profit = total_rev - total_explicit
-    econ_profit = total_rev - economic_cost
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>3. Expected Inflation Bias ($\pi^e$):</span>
+              <span id="exp-val" style="color: #38BDF8;">4.0%</span>
+            </div>
+            <input type="range" id="exp-slider" min="2.0" max="7.0" step="0.5" value="4.0" oninput="updateSim()" />
+            <div class="slider-desc">Household and wage-setter long-term baseline inflation expectations.</div>
+          </div>
 
-    with col_res:
-        st.markdown('<div class="section-header">📈 Profit Diagnostics & Analysis</div>', unsafe_allow_html=True)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown(f'<div class="metric-card"><h3>Accounting Profit</h3><div class="metric-value">${acct_profit:,.2f}</div><p style="color: #94A3B8; font-size: 0.85rem;">TR - Explicit Costs</p></div>', unsafe_allow_html=True)
-        with c2:
-            color_code = "#10B981" if econ_profit >= 0 else "#EF4444"
-            st.markdown(f'<div class="metric-card"><h3>Economic Profit</h3><div class="metric-value" style="color: {color_code};">${econ_profit:,.2f}</div><p style="color: #94A3B8; font-size: 0.85rem;">TR - (Explicit + Implicit Costs)</p></div>', unsafe_allow_html=True)
-            
-        status_msg = (
-            "The business generates **positive economic profit**, indicating resources earn more than their best alternative."
-            if econ_profit > 0 else (
-                "The firm earns **zero economic profit (normal profit)**. All explicit expenses and opportunity costs are fully covered."
-                if econ_profit == 0 else
-                "The business incurs an **economic loss**. Reallocating resources to their next best alternative would yield a higher return."
-            )
-        )
-        
-        st.markdown(f"""
-        <div class="concept-note">
-            <h4>💡 Summary Diagnostic</h4>
-            <ul>
-                <li><strong>Total Explicit Costs:</strong> ${total_explicit:,.2f}</li>
-                <li><strong>Total Implicit Costs:</strong> ${total_implicit:,.2f}</li>
-                <li><strong>Total Economic Cost:</strong> ${economic_cost:,.2f}</li>
-            </ul>
-            <p><strong>Takeaway:</strong> {status_msg}</p>
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>4. RBI Repo Stance:</span>
+              <span id="repo-val" style="color: #38BDF8;">6.50%</span>
+            </div>
+            <input type="range" id="repo-slider" min="4.0" max="8.5" step="0.25" value="6.50" oninput="updateSim()" />
+            <div class="slider-desc">Central bank rate hike curbs overheating demand but raises unemployment.</div>
+          </div>
+
+          <hr />
+
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.2);">
+            <h4 style="color: #34D399; font-size: 0.95rem;">🎯 Policy Mission: Golden Equilibrium</h4>
+            <p style="font-size: 0.8rem; color: #CBD5E1; margin-top: 0.3rem;">
+              Stabilize the economy so that <b>Headline Inflation settles within the RBI target band (3.5% – 4.5%)</b> and <b>Unemployment stays below 5.5%</b>.
+            </p>
+            <button class="btn-action" onclick="evaluateSim()">Evaluate Economic Policy</button>
+            <div id="sim-feedback"></div>
+          </div>
         </div>
-        """, unsafe_allow_html=True)
 
-# --- SECTION 3: OPPORTUNITY & SUNK COSTS ---
-elif nav_selection == "💡 Opportunity & Sunk Costs Evaluator":
-    st.markdown('<div class="section-header">💡 Opportunity Cost & Sunk Cost Framework</div>', unsafe_allow_html=True)
-    
-    col_opp, col_sunk = st.columns(2)
-    
-    with col_opp:
-        st.markdown("""
-        <div class="concept-note">
-        <h3>💡 Opportunity Cost</h3>
-        <p>The value of the <strong>next best alternative forgone</strong> when choosing a decision path.</p>
-        <p>Every allocation of capital or time carries an opportunity cost. Economic cost always accounts for both cash expenses and opportunity costs.</p>
+        <!-- Clearance / Charts -->
+        <div>
+          <div class="metric-grid">
+            <div class="metric-panel">
+              <div class="metric-title">Headline Inflation</div>
+              <div class="metric-val" id="metric-cpi" style="color: #38BDF8;">4.00%</div>
+            </div>
+            <div class="metric-panel">
+              <div class="metric-title">Unemployment Rate</div>
+              <div class="metric-val" id="metric-unemp" style="color: #10B981;">5.00%</div>
+            </div>
+            <div class="metric-panel">
+              <div class="metric-title">Output Gap</div>
+              <div class="metric-val" id="metric-gap" style="color: #F87171;">0.00%</div>
+            </div>
+          </div>
+
+          <div style="position: relative; height: 320px; background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 8px;">
+            <canvas id="phillipsChart"></canvas>
+          </div>
+          <p id="chart-caption" style="text-align: center; color: #94A3B8; font-size: 0.8rem; margin-top: 0.5rem;">
+            📍 Short-Run Phillips Curve (SRPC) & India Natural Rate of Unemployment (NAIRU = 5.0%)
+          </p>
         </div>
-        """, unsafe_allow_html=True)
-        
-    with col_sunk:
-        st.markdown("""
-        <div class="case-study">
-        <h3>🛑 Sunk Cost</h3>
-        <p>An expense that has <strong>already been paid and cannot be recovered</strong> by any future choice.</p>
-        <p><strong>The Golden Rule:</strong> Sunk costs are <em>irrelevant</em> for forward-looking economic choices. Rational managers compare <strong>incremental revenue to incremental cost</strong> only.</p>
+      </div>
+    </section>
+
+    <!-- MODULE 2: ASSESSMENT -->
+    <section id="module-quiz" style="display: none;">
+      <h3 style="font-size: 1.4rem; margin-bottom: 0.3rem;">📝 Concepts in Inflation, Employment & Central Banking</h3>
+      <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Answer these 5 core macroeconomic questions (10 points each) to verify conceptual understanding.
+      </p>
+
+      <form id="quiz-form" onsubmit="handleQuizSubmit(event)">
+        <!-- Q1 -->
+        <div class="quiz-card">
+          <div class="quiz-question">1. The Phillips Curve Trade-off</div>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 0.75rem;">What does the traditional short-run Phillips curve depict?</p>
+          <label class="option-label"><input type="radio" name="q1" value="A"> A) A direct positive relationship between tax rates and tax revenue.</label>
+          <label class="option-label"><input type="radio" name="q1" value="B"> B) An inverse relationship between the rate of inflation and the rate of unemployment.</label>
+          <label class="option-label"><input type="radio" name="q1" value="C"> C) A constant ratio between money supply and gold reserves.</label>
+          <label class="option-label"><input type="radio" name="q1" value="D"> D) A negative relationship between domestic savings and private investment.</label>
         </div>
-        """, unsafe_allow_html=True)
 
-    st.markdown("### 🛠️ Interactive Sunk Cost Evaluator")
-    c1, c2 = st.columns([1, 1])
-    
-    with c1:
-        sunk_expenditure = st.number_input("Past Expenditure / Unrecoverable R&D (Sunk Cost):", min_value=0.0, value=2000000.0, step=100000.0)
-        cost_to_complete = st.number_input("Additional Cost Required to Finish:", min_value=0.0, value=500000.0, step=50000.0)
-        projected_revenue = st.number_input("Projected Future Revenue Upon Completion:", min_value=0.0, value=750000.0, step=50000.0)
-        
-    with c2:
-        incremental_net = projected_revenue - cost_to_complete
-        
-        st.markdown('<div class="case-study"><h4>📌 Decision Analysis</h4></div>', unsafe_allow_html=True)
-        if incremental_net > 0:
-            st.success(f"✅ **Proceed with Project!**\n\nIncremental Revenue (${projected_revenue:,.2f}) exceeds Incremental Cost (${cost_to_complete:,.2f}) by **${incremental_net:,.2f}**. The past spent ${sunk_expenditure:,.2f} is sunk and irrelevant.")
-        elif incremental_net == 0:
-            st.warning(f"⚠️ **Breakeven on Completion.**\n\nIncremental Revenue equals Incremental Cost (${cost_to_complete:,.2f}). Proceed only if qualitative strategic benefits exist.")
-        else:
-            st.error(f"❌ **Abandon Project!**\n\nCompleting the project burns an additional **${abs(incremental_net):,.2f}**. Continuing to spend money just to justify a past expense is the Sunk Cost Fallacy.")
+        <!-- Q2 -->
+        <div class="quiz-card">
+          <div class="quiz-question">2. Stagflation Dynamics</div>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 0.75rem;">What occurs during a period of stagflation (e.g., following an adverse supply-side oil shock)?</p>
+          <label class="option-label"><input type="radio" name="q1" value="dummy" style="display:none;"></label>
+          <label class="option-label"><input type="radio" name="q2" value="A"> A) Stagnant economic growth accompanied by rising unemployment and high inflation.</label>
+          <label class="option-label"><input type="radio" name="q2" value="B"> B) Rapid economic expansion with continuous deflation.</label>
+          <label class="option-label"><input type="radio" name="q2" value="C"> C) Zero unemployment combined with falling consumer price levels.</label>
+          <label class="option-label"><input type="radio" name="q2" value="D"> D) Balanced government budget accompanied by soaring trade surpluses.</label>
+        </div>
 
-# --- SECTION 4: TAXONOMY REFERENCE ---
-elif nav_selection == "📖 Comprehensive Cost Taxonomy":
-    st.markdown('<div class="section-header">📖 Comprehensive Microeconomic Cost Taxonomy</div>', unsafe_allow_html=True)
-    
-    st.markdown(r"""
-| Cost Concept | Definition | Mathematical Expression | Managerial Application |
-| :--- | :--- | :--- | :--- |
-| **Explicit Cost** | Direct out-of-pocket cash payments for resources. | Recorded in accounting ledgers | Cash flow tracking, tax reporting |
-| **Implicit Cost** | Non-monetary opportunity costs of using owned resources. | Value of next best alternative | Strategic resource allocation |
-| **Accounting Cost** | Total explicit cash outlays incurred. | $\text{Explicit Costs}$ | Financial statements & auditing |
-| **Economic Cost** | Combined explicit and implicit opportunity costs. | $\text{Explicit Cost} + \text{Implicit Cost}$ | Firm entry/exit decisions |
-| **Opportunity Cost** | Value of the next best alternative forgone. | $OC = \text{Benefit of Best Alternative}$ | Capital budgeting & investment choices |
-| **Sunk Cost** | Past expense that cannot be recovered. | Irrecoverable Outlays | Must be ignored in future decisions |
-| **Fixed Cost (TFC)** | Costs that do not vary with output volume ($Q$). | $TFC = TC - TVC$ | Operating leverage & break-even |
-| **Variable Cost (TVC)**| Costs that change directly with output volume ($Q$). | $TVC = f(Q)$ | Production scaling & shutdown choices |
-| **Total Cost (TC)** | Sum of fixed and variable expenses. | $TC = TFC + TVC$ | Total budget planning |
-| **Average Total Cost (ATC)**| Total expense per unit of output. | $ATC = \frac{TC}{Q} = AFC + AVC$ | Long-run pricing & unit efficiency |
-| **Average Fixed Cost (AFC)**| Fixed expense distributed per unit of output. | $AFC = \frac{TFC}{Q}$ | Overhead spreading analysis |
-| **Average Variable Cost (AVC)**| Variable expense per unit of output. | $AVC = \frac{TVC}{Q}$ | Short-run shutdown threshold ($P < AVC$) |
-| **Marginal Cost (MC)** | Extra cost incurred by producing 1 additional unit. | $MC = \frac{\Delta TC}{\Delta Q} = \frac{\partial TC}{\partial Q}$ | Profit-maximizing output ($MR = MC$) |
-""")
+        <!-- Q3 -->
+        <div class="quiz-card">
+          <div class="quiz-question">3. Types of Unemployment</div>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 0.75rem;">Which category best describes workers temporarily unemployed while transitioning between jobs or entering the labor market?</p>
+          <label class="option-label"><input type="radio" name="q3" value="A"> A) Cyclical Unemployment</label>
+          <label class="option-label"><input type="radio" name="q3" value="B"> B) Structural Unemployment</label>
+          <label class="option-label"><input type="radio" name="q3" value="C"> C) Frictional Unemployment</label>
+          <label class="option-label"><input type="radio" name="q3" value="D"> D) Disguised Unemployment</label>
+        </div>
 
-# --- SECTION 5: KNOWLEDGE CHECK ---
-elif nav_selection == "📝 Cost Architecture Knowledge Check":
-    st.markdown('<div class="section-header">📝 Master Cost Economics Knowledge Evaluation</div>', unsafe_allow_html=True)
-    
-    with st.form("cost_quiz"):
-        st.markdown("### 1. Economic Profit Calculation")
-        q1 = st.radio(
-            "An entrepreneur leaves a $100,000/year job to start a firm. Revenues are $300,000 and explicit costs are $180,000. What is the Economic Profit?",
-            options=[
-                "A) $120,000",
-                "B) $20,000",
-                "C) $300,000",
-                "D) -$80,000"
-            ], index=None
-        )
-        
-        st.markdown("---")
-        st.markdown("### 2. Sunk Cost & Decision Theory")
-        q2 = st.radio(
-            "A company spent $5M developing a prototype that turns out to be non-viable. To complete it will cost $1M more, but projected revenue is only $500,000. Should they proceed?",
-            options=[
-                "A) Yes, to recover part of the initial $5M investment.",
-                "B) No, because incremental revenue ($500k) is less than incremental cost ($1M); the $5M is a sunk cost.",
-                "C) Yes, because total revenue exceeds the remaining variable cost.",
-                "D) No, because fixed costs must always be amortized fully."
-            ], index=None
-        )
-        
-        st.markdown("---")
-        st.markdown("### 3. Marginal Cost Intersections")
-        q3 = st.radio(
-            "At what point does the Marginal Cost (MC) curve intersect the Average Total Cost (ATC) curve?",
-            options=[
-                "A) At the maximum point of ATC.",
-                "B) At the absolute minimum point of ATC.",
-                "C) At the point where fixed costs equal variable costs.",
-                "D) At zero output volume."
-            ], index=None
-        )
-        
-        eval_quiz = st.form_submit_button("Submit Performance Metrics", type="primary")
-        
-        if eval_quiz:
-            score_acc = 0.0
-            
-            if q1 == "B) $20,000":
-                score_acc += 33.33; st.session_state.ans1_ok = True
-            else: st.session_state.ans1_ok = False
+        <!-- Q4 -->
+        <div class="quiz-card">
+          <div class="quiz-question">4. RBI Monetary Policy Framework</div>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 0.75rem;">Under the Flexible Inflation Targeting (FIT) framework, what is the Reserve Bank of India's statutory inflation mandate?</p>
+          <label class="option-label"><input type="radio" name="q4" value="A"> A) 0% headline CPI with zero tolerance.</label>
+          <label class="option-label"><input type="radio" name="q4" value="B"> B) 4% CPI inflation with a tolerance band of +/- 2% (2% to 6%).</label>
+          <label class="option-label"><input type="radio" name="q4" value="C"> C) Exactly 8% WPI inflation target to support export volume.</label>
+          <label class="option-label"><input type="radio" name="q4" value="D"> D) Floating target matching the US Federal Reserve target rate.</label>
+        </div>
 
-            if q2 == "B) No, because incremental revenue ($500k) is less than incremental cost ($1M); the $5M is a sunk cost.":
-                score_acc += 33.33; st.session_state.ans2_ok = True
-            else: st.session_state.ans2_ok = False
-                
-            if q3 == "B) At the absolute minimum point of ATC.":
-                score_acc += 33.34; st.session_state.ans3_ok = True
-            else: st.session_state.ans3_ok = False
-                
-            st.session_state.knowledge_rating = score_acc
-            st.session_state.quiz_done = True
-            st.rerun()
+        <!-- Q5 -->
+        <div class="quiz-card">
+          <div class="quiz-question">5. Long-Run Phillips Curve (LRPC)</div>
+          <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 0.75rem;">According to modern macroeconomic consensus, what does the Long-Run Phillips Curve look like?</p>
+          <label class="option-label"><input type="radio" name="q5" value="A"> A) Upward sloping, indicating higher inflation continuously boosts long-term jobs.</label>
+          <label class="option-label"><input type="radio" name="q5" value="B"> B) Completely flat at zero percent inflation.</label>
+          <label class="option-label"><input type="radio" name="q5" value="C"> C) Vertical at the Natural Rate of Unemployment (NAIRU).</label>
+          <label class="option-label"><input type="radio" name="q5" value="D"> D) Downward sloping identically to the short-run curve.</label>
+        </div>
 
-    if st.session_state.quiz_done:
-        st.markdown("---")
-        st.markdown(f"### 🎉 Quiz Performance Score: {round(st.session_state.knowledge_rating, 1)} / 100 Points")
-        
-        if not st.session_state.ans1_ok:
-            st.error("**Q1 Analysis:** Accounting Profit = $300k - $180k = $120k. Subtract the $100k foregone salary (implicit cost) to get Economic Profit = $20,000.")
-        if not st.session_state.ans2_ok:
-            st.error("**Q2 Analysis:** The $5M spent is a sunk cost and unrecoverable. Marginal cost to finish ($1M) exceeds marginal revenue ($500k), so continuing loses another $500k.")
-        if not st.session_state.ans3_ok:
-            st.error("**Q3 Analysis:** $MC$ always intersects $ATC$ (and $AVC$) at its minimum point. When $MC < ATC$, $ATC$ falls; when $MC > ATC$, $ATC$ rises.")
+        <button type="submit" class="btn-action">Submit Assessment & Calculate Final Score</button>
+      </form>
 
-# =====================================================================
-# SYSTEM FOOTER DATA TERMINAL
-# =====================================================================
-st.markdown("---")
-foot_c1, foot_c2, foot_c3 = st.columns(3)
+      <div id="quiz-results" style="display: none; margin-top: 1.5rem;">
+        <h4 style="font-size: 1.2rem; margin-bottom: 1rem;">Assessment Result: <span id="quiz-points-display">0</span> / 50 Points</h4>
+        <div id="quiz-explanations"></div>
+      </div>
+    </section>
 
-with foot_c1:
-    st.caption("🎓 Microeconomic Cost Engine | Corporate Strategy Hub")
+    <!-- Footer -->
+    <footer>
+      <div>🇮🇳 Indian Macroeconomic Education Module</div>
+      <div>⚖️ Inflation, Employment & Central Banking</div>
+      <div>⏰ System Active (Interactive Portal)</div>
+    </footer>
+  </main>
 
-with foot_c2:
-    st.caption("🚀 Cost & Profitability Optimization Active")
+  <script>
+    // State management
+    const state = {
+      simPoints: 0,
+      quizPoints: 0,
+      cpiEquilibrium: 4.0,
+      unempEquilibrium: 5.0
+    };
 
-with foot_c3:
-    st.caption(f"⏰ System Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    let chartInstance = null;
+
+    function switchTab(tab) {
+      document.getElementById('module-sim').style.display = tab === 'sim' ? 'block' : 'none';
+      document.getElementById('module-quiz').style.display = tab === 'quiz' ? 'block' : 'none';
+
+      document.getElementById('nav-sim').classList.toggle('active', tab === 'sim');
+      document.getElementById('nav-quiz').classList.toggle('active', tab === 'quiz');
+    }
+
+    function syncScoreboard() {
+      const total = state.simPoints + state.quizPoints;
+      document.getElementById('side-sim-score').innerText = state.simPoints;
+      document.getElementById('side-quiz-score').innerText = state.quizPoints;
+      document.getElementById('side-total-score').innerText = total;
+
+      document.getElementById('banner-sim').innerText = state.simPoints;
+      document.getElementById('banner-quiz').innerText = state.quizPoints;
+      document.getElementById('banner-total').innerText = total;
+
+      document.getElementById('side-perfect').style.display = (total === 100) ? 'block' : 'none';
+    }
+
+    // Phillips Curve Engine
+    function updateSim() {
+      const ad = parseFloat(document.getElementById('ad-slider').value);
+      const shock = parseFloat(document.getElementById('shock-slider').value);
+      const pi_e = parseFloat(document.getElementById('exp-slider').value);
+      const repo = parseFloat(document.getElementById('repo-slider').value);
+
+      document.getElementById('ad-val').innerText = (ad > 0 ? "+" : "") + ad.toFixed(1) + "%";
+      document.getElementById('shock-val').innerText = (shock > 0 ? "+" : "") + shock.toFixed(1) + "%";
+      document.getElementById('exp-val').innerText = pi_e.toFixed(1) + "%";
+      document.getElementById('repo-val').innerText = repo.toFixed(2) + "%";
+
+      // Structural constants (NAIRU = 5.0%, Neutral Repo = 6.50%)
+      const NAIRU = 5.0;
+      const neutralRepo = 6.5;
+
+      // Monetary Drag: Higher repo cools demand and increases unemployment
+      const monetaryDrag = (repo - neutralRepo) * 0.6;
+
+      // Net output gap
+      const outputGap = ad - monetaryDrag;
+
+      // Unemployment via Okun's style sensitivity: u = NAIRU - 0.5 * outputGap
+      let unemp = NAIRU - (outputGap * 0.55);
+      unemp = Math.max(2.5, Math.min(10.0, unemp));
+
+      // Expectations-augmented Phillips Curve: pi = pi_e - beta*(u - NAIRU) + SupplyShock
+      let cpi = pi_e - 0.7 * (unemp - NAIRU) + shock;
+      cpi = Math.max(0.5, Math.min(14.0, cpi));
+
+      state.cpiEquilibrium = cpi;
+      state.unempEquilibrium = unemp;
+
+      document.getElementById('metric-cpi').innerText = cpi.toFixed(2) + "%";
+      document.getElementById('metric-unemp').innerText = unemp.toFixed(2) + "%";
+      document.getElementById('metric-gap').innerText = (outputGap > 0 ? "+" : "") + outputGap.toFixed(2) + "%";
+
+      updateChart(unemp, cpi, pi_e, shock);
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('phillipsChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [2.5, 3.5, 4.5, 5.0, 5.5, 6.5, 7.5, 8.5],
+          datasets: [
+            {
+              label: 'Short-Run Phillips Curve (SRPC)',
+              data: [],
+              borderColor: '#38BDF8',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: 'Equilibrium State (Current Policy)',
+              data: [],
+              borderColor: '#10B981',
+              backgroundColor: '#10B981',
+              pointRadius: 6,
+              showLine: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: { display: true, text: 'Unemployment Rate (%)', color: '#94A3B8' },
+              grid: { color: 'rgba(148, 163, 184, 0.1)' },
+              ticks: { color: '#CBD5E1' }
+            },
+            y: {
+              title: { display: true, text: 'Inflation Rate (%)', color: '#94A3B8' },
+              grid: { color: 'rgba(148, 163, 184, 0.1)' },
+              ticks: { color: '#CBD5E1' },
+              min: 0,
+              max: 12
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#E2E8F0' } }
+          }
+        }
+      });
+    }
+
+    function updateChart(currentU, currentCPI, pi_e, shock) {
+      const uGrid = [2.5, 3.5, 4.5, 5.0, 5.5, 6.5, 7.5, 8.5];
+      const curveData = uGrid.map(u => {
+        return Math.max(0, pi_e - 0.7 * (u - 5.0) + shock);
+      });
+
+      chartInstance.data.labels = uGrid;
+      chartInstance.data.datasets[0].data = curveData;
+      chartInstance.data.datasets[1].data = uGrid.map(u => Math.abs(u - currentU) < 0.25 ? currentCPI : null);
+      chartInstance.update();
+    }
+
+    function evaluateSim() {
+      const fb = document.getElementById('sim-feedback');
+      const targetInflation = state.cpiEquilibrium >= 3.5 && state.cpiEquilibrium <= 4.5;
+      const targetUnemployment = state.unempEquilibrium <= 5.5;
+
+      if (targetInflation && targetUnemployment) {
+        state.simPoints = 50;
+        fb.innerHTML = `
+          <div class="alert-box alert-success">
+            ✅ <b>Equilibrium Achieved!</b> Headline inflation (${state.cpiEquilibrium.toFixed(2)}%) is anchored near the 4% target and unemployment (${state.unempEquilibrium.toFixed(2)}%) is controlled. Awarded: <b>50 / 50 Pts</b>.
+          </div>
+        `;
+      } else {
+        state.simPoints = 25;
+        let reasons = [];
+        if (!targetInflation) reasons.push(`Inflation (${state.cpiEquilibrium.toFixed(2)}%) is outside the 3.5%-4.5% comfort zone`);
+        if (!targetUnemployment) reasons.push(`Unemployment (${state.unempEquilibrium.toFixed(2)}%) exceeds the 5.5% boundary`);
+        fb.innerHTML = `
+          <div class="alert-box alert-warning">
+            ⚠️ <b>Sub-Optimal Equilibrium:</b> ${reasons.join(" and ")}. Awarded: <b>25 / 50 Pts</b>. Try adjusting repo or stimulus.
+          </div>
+        `;
+      }
+      syncScoreboard();
+    }
+
+    function handleQuizSubmit(e) {
+      e.preventDefault();
+      const form = document.getElementById('quiz-form');
+      const data = new FormData(form);
+
+      const answers = {
+        q1: data.get('q1'),
+        q2: data.get('q2'),
+        q3: data.get('q3'),
+        q4: data.get('q4'),
+        q5: data.get('q5')
+      };
+
+      const keys = {
+        q1: { correct: 'B', expl: "Phillips Curve establishes the inverse trade-off between inflation and unemployment in the short run." },
+        q2: { correct: 'A', expl: "Stagflation represents stagnant growth/job losses accompanied simultaneously by high cost-push inflation." },
+        q3: { correct: 'C', expl: "Frictional unemployment occurs during normal job searches and voluntary career transitions." },
+        q4: { correct: 'B', expl: "RBI's Monetary Policy Framework aims for 4% headline CPI with a flexible corridor of +/- 2% (2% to 6%)." },
+        q5: { correct: 'C', expl: "The Long-Run Phillips Curve is vertical at NAIRU because monetary expansion cannot permanently lower unemployment past its structural natural rate." }
+      };
+
+      let score = 0;
+      let reviewHtml = '';
+
+      for (let i = 1; i <= 5; i++) {
+        const qKey = 'q' + i;
+        const isRight = (answers[qKey] === keys[qKey].correct);
+        if (isRight) {
+          score += 10;
+        } else {
+          reviewHtml += `
+            <div class="alert-box alert-error">
+              ❌ <b>Question ${i} Missed:</b> Correct answer was <b>(${keys[qKey].correct})</b>. ${keys[qKey].expl}
+            </div>
+          `;
+        }
+      }
+
+      state.quizPoints = score;
+      document.getElementById('quiz-points-display').innerText = score;
+      document.getElementById('quiz-explanations').innerHTML = reviewHtml || '<div class="alert-box alert-success">🎉 Excellent! You got all conceptual questions right!</div>';
+      document.getElementById('quiz-results').style.display = 'block';
+
+      syncScoreboard();
+    }
+
+    // Initialize application
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      updateSim();
+      syncScoreboard();
+    });
+  </script>
+</body>
+</html>
